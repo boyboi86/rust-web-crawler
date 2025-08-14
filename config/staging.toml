@@ -1,0 +1,40 @@
+# Staging Environment Configuration
+[environment]
+type = "staging"
+
+[crawler]
+base_url = ["https://httpbin.org/links/10", "https://httpbin.org/html"]
+avoid_url_extensions = ["pdf", "doc", "exe", "zip"]
+target_words = ["test", "stage", "example", "demo"]
+min_word_length = 3
+proxy_pool = []
+user_agent = "RustCrawler/1.0 (Staging)"
+accepted_languages = ["Eng", "Fra", "Spa"]
+
+[crawler.default_rate_limit]
+max_requests_per_second = 5
+window_size_ms = 1000
+
+[crawler.retry_config]
+max_retries = 4
+base_delay_ms = 1500
+max_delay_ms = 45000
+backoff_multiplier = 1.8
+jitter_factor = 0.15
+
+[logging]
+level = "info"
+file_path = "logs/crawler_staging.log"
+max_file_size_mb = 100
+max_files = 7
+
+[monitoring]
+enable_metrics = true
+metrics_port = 9091
+health_check_interval_secs = 45
+
+[storage]
+persist_queue = true
+queue_file_path = "data/staging_queue_state.json"
+results_output_path = "data/staging_results"
+checkpoint_interval_secs = 45

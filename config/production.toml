@@ -1,0 +1,43 @@
+# Production Environment Configuration
+[environment]
+type = "production"
+
+[crawler]
+base_url = ["https://news.ycombinator.com", "https://reddit.com/r/programming"]
+avoid_url_extensions = ["pdf", "doc", "exe", "zip", "tar", "gz"]
+target_words = ["programming", "technology", "software", "development"]
+min_word_length = 4
+proxy_pool = [
+    "http://proxy1.example.com:8080",
+    "http://proxy2.example.com:8080",
+]
+user_agent = "RustCrawler/1.0 (Production)"
+accepted_languages = ["Eng"]
+
+[crawler.default_rate_limit]
+max_requests_per_second = 10
+window_size_ms = 1000
+
+[crawler.retry_config]
+max_retries = 5
+base_delay_ms = 2000
+max_delay_ms = 60000
+backoff_multiplier = 1.5
+jitter_factor = 0.2
+
+[logging]
+level = "warn"
+file_path = "logs/crawler_prod.log"
+max_file_size_mb = 200
+max_files = 10
+
+[monitoring]
+enable_metrics = true
+metrics_port = 9090
+health_check_interval_secs = 60
+
+[storage]
+persist_queue = true
+queue_file_path = "/var/lib/crawler/queue_state.json"
+results_output_path = "/var/lib/crawler/results"
+checkpoint_interval_secs = 30

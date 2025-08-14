@@ -1,0 +1,59 @@
+# Example Rust Web Crawler Configuration
+# This file demonstrates all available configuration options
+
+[crawler]
+# Base URLs to start crawling from
+base_url = ["https://example.com", "https://test.com"]
+
+# File extensions to avoid during crawling
+avoid_url_extensions = [".pdf", ".jpg", ".png", ".gif", ".zip", ".exe"]
+
+# Target words/phrases to look for (optional - leave empty to crawl all content)
+target_words = []
+
+# Minimum word count for content to be considered valid
+min_word_length = 50
+
+# Proxy pool for rotating requests (optional)
+proxy_pool = []
+
+# User agent string for requests
+user_agent = "Mozilla/5.0 (compatible; RustCrawler/1.0)"
+
+# Accepted languages for crawling
+accepted_languages = ["Eng", "Fra", "Spa"]
+
+[rate_limiting]
+# Default rate limiting for all domains
+[rate_limiting.default]
+max_requests_per_second = 2
+burst_size = 5
+window_size_seconds = 60
+
+# Domain-specific rate limits
+[rate_limiting.domains]
+"example.com" = { max_requests_per_second = 1, burst_size = 3, window_size_seconds = 60 }
+"test.com" = { max_requests_per_second = 5, burst_size = 10, window_size_seconds = 60 }
+
+[retry]
+# Retry configuration for failed requests
+max_retries = 3
+base_delay_ms = 1000
+backoff_multiplier = 2.0
+max_delay_ms = 30000
+
+[logging]
+# Logging configuration
+level = "Info"                 # Trace, Debug, Info, Warn, Error
+output = "Console"             # Console, File, Both
+file_path = "logs/crawler.log"
+json_format = false            # Use JSON format for structured logging
+session_logging = true         # Include session IDs in logs
+performance_logging = true     # Log performance metrics
+error_logging = true           # Log detailed error information
+
+# Log rotation (when using file output)
+[logging.rotation]
+max_size_mb = 100
+max_files = 10
+daily_rotation = true

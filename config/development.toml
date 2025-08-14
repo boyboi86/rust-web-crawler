@@ -1,0 +1,40 @@
+# Development Environment Configuration
+[environment]
+type = "development"
+
+[crawler]
+base_url = ["https://httpbin.org/html", "https://example.com"]
+avoid_url_extensions = ["pdf", "doc", "exe", "zip"]
+target_words = ["example", "test", "demo"]
+min_word_length = 3
+proxy_pool = []
+user_agent = "RustCrawler/1.0 (Development)"
+accepted_languages = ["Eng", "Fra"]
+
+[crawler.default_rate_limit]
+max_requests_per_second = 1
+window_size_ms = 1000
+
+[crawler.retry_config]
+max_retries = 3
+base_delay_ms = 1000
+max_delay_ms = 30000
+backoff_multiplier = 2.0
+jitter_factor = 0.1
+
+[logging]
+level = "debug"
+file_path = "logs/crawler_dev.log"
+max_file_size_mb = 50
+max_files = 5
+
+[monitoring]
+enable_metrics = true
+metrics_port = 9090
+health_check_interval_secs = 30
+
+[storage]
+persist_queue = true
+queue_file_path = "data/dev_queue_state.json"
+results_output_path = "data/dev_results"
+checkpoint_interval_secs = 60
