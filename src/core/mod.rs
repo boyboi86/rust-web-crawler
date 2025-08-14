@@ -8,10 +8,11 @@ pub mod utils;
 // Re-export common items for convenience
 pub use error::CrawlError;
 pub use traits::{
-    ContentProcessor, DnsResolver, ErrorHandler, HttpClientManager, RateLimiter, RobotsChecker,
+    Categorizable, ContentProcessor, DnsResolver, ErrorHandler, HttpClientManager, Normalizable,
+    RateLimiter, Retryable, RobotsChecker, TimestampedTask, Validatable,
 };
 pub use types::{
-    CrawlResult, CrawlTask, DomainRateLimit, ErrorSeverity, LangType, QueueStats, RetryConfig,
-    SkipReason, TaskPriority, TaskResult, TaskStatus,
+    CrawlResult, CrawlTask, DomainRateLimit, ErrorSeverity, LangType, OptionInstant, QueueStats,
+    RetryConfig, SkipReason, TaskPriority, TaskResult, TaskStatus, TaskTiming,
 };
 pub use utils::ErrorUtils;

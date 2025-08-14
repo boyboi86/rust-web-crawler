@@ -4,7 +4,49 @@ use crate::core::types::RetryConfig;
 use anyhow::Error;
 use std::collections::HashMap;
 use std::net::IpAddr;
+use std::time::Duration;
 use url::Url;
+
+/// Building block trait for categorizable types - promotes composition
+pub trait Categorizable<T> {
+    fn categorize(&self) -> T;
+}
+
+/// Building block trait for retryable operations - promotes reusability
+pub trait Retryable {
+    fn is_retryable(&self) -> bool;
+    fn calculate_delay(&self, attempt: u32, config: &RetryConfig) -> Duration;
+}
+
+/// Building block trait for timestamped entities - promotes timing composition
+pub trait TimestampedTask {
+    type Timing;
+    fn timing(&self) -> &Self::Timing;
+    fn timing_mut(&mut self) -> &mut Self::Timing;
+
+    /// Default implementation using building blocks
+    fn mark_started(&mut self) {
+        // Implementation will depend on the concrete Timing type
+    }
+}
+
+/// Building block trait for validatable types - promotes validation composition
+pub trait Validatable {
+    type ValidationError;
+    fn validate(&self) -> Result<(), Self::ValidationError>;
+}
+
+/// Building block trait for normalizable data - promotes consistency
+pub trait Normalizable {
+    fn normalize(&mut self) -> &mut Self;
+    fn normalized(mut self) -> Self
+    where
+        Self: Sized,
+    {
+        self.normalize();
+        self
+    }
+}
 
 /// Trait for DNS resolution with caching capabilities
 pub trait DnsResolver {

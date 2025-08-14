@@ -3,13 +3,13 @@ name = "rust_web_crawler"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "rust_web_crawler"
+path = "src/lib.rs"
+
 [[bin]]
 name = "main"
 path = "src/bin/main.rs"
-
-[[bin]]
-name = "demo"
-path = "src/bin/demo.rs"
 
 [dependencies]
 tokio = { version = "1.0", features = ["full"] }
@@ -36,3 +36,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 [dev-dependencies]
 tempfile = "3.8"
 reqwest = "0.11"
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "core_benchmarks"
+harness = false

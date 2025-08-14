@@ -1,5 +1,5 @@
 use crate::config::WebCrawlerConfig;
-use crate::core::DomainRateLimit;
+use crate::core::{DomainRateLimit, types::RateConfig};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -110,24 +110,30 @@ impl EnvironmentConfig {
         match self.environment {
             Environment::Development => {
                 self.crawler.default_rate_limit = Some(DomainRateLimit {
-                    max_requests_per_second: 1, // Slower for dev
-                    window_size_ms: 1000,
+                    rate: RateConfig {
+                        max_requests_per_second: 1, // Slower for dev
+                        window_size_ms: 1000,
+                    },
                 });
                 self.logging.level = "debug".to_string();
                 self.monitoring.enable_metrics = true;
             }
             Environment::Staging => {
                 self.crawler.default_rate_limit = Some(DomainRateLimit {
-                    max_requests_per_second: 5,
-                    window_size_ms: 1000,
+                    rate: RateConfig {
+                        max_requests_per_second: 5,
+                        window_size_ms: 1000,
+                    },
                 });
                 self.logging.level = "info".to_string();
                 self.monitoring.enable_metrics = true;
             }
             Environment::Production => {
                 self.crawler.default_rate_limit = Some(DomainRateLimit {
-                    max_requests_per_second: 10,
-                    window_size_ms: 1000,
+                    rate: RateConfig {
+                        max_requests_per_second: 10,
+                        window_size_ms: 1000,
+                    },
                 });
                 self.logging.level = "warn".to_string();
                 self.monitoring.enable_metrics = true;

@@ -1,3 +1,4 @@
+use crate::core::types::TaskContent;
 use crate::core::{CrawlTask, QueueStats, TaskPriority, TaskResult, TaskStatus};
 use anyhow::Error;
 use serde::{Deserialize, Serialize};
@@ -79,7 +80,7 @@ impl Ord for PrioritizedTask {
         self.task
             .priority
             .cmp(&other.task.priority)
-            .then_with(|| other.task.created_at.cmp(&self.task.created_at))
+            .then_with(|| other.task.created_at().cmp(&self.task.created_at()))
     }
 }
 
@@ -120,8 +121,8 @@ impl TaskQueue {
         // Update stats
         {
             let mut stats = self.stats.write().await;
-            stats.total_tasks += 1;
-            stats.pending_tasks += 1;
+            stats.counts.total += 1;
+            stats.counts.pending += 1;
         }
 
         Ok(task_id)
@@ -146,8 +147,8 @@ impl TaskQueue {
                 let prioritized_task = PrioritizedTask { task };
                 pending.push(prioritized_task);
 
-                stats.total_tasks += 1;
-                stats.pending_tasks += 1;
+                stats.counts.total += 1;
+                stats.counts.pending += 1;
             }
         }
 
@@ -172,8 +173,8 @@ impl TaskQueue {
                     // Update stats
                     {
                         let mut stats = self.stats.write().await;
-                        stats.retrying_tasks = stats.retrying_tasks.saturating_sub(1);
-                        stats.in_progress_tasks += 1;
+                        stats.counts.retrying = stats.counts.retrying.saturating_sub(1);
+                        stats.counts.in_progress += 1;
                     }
 
                     return Some(task);
@@ -200,8 +201,8 @@ impl TaskQueue {
                 // Update stats
                 {
                     let mut stats = self.stats.write().await;
-                    stats.pending_tasks = stats.pending_tasks.saturating_sub(1);
-                    stats.in_progress_tasks += 1;
+                    stats.counts.pending = stats.counts.pending.saturating_sub(1);
+                    stats.counts.in_progress += 1;
                 }
 
                 return Some(task);
@@ -231,7 +232,11 @@ impl TaskQueue {
                 task_id: task_id.to_string(),
                 url: task.url.clone(),
                 success: true,
-                content,
+                content: content.map(|content_str| TaskContent {
+                    content: content_str.clone(),
+                    word_count: content_str.split_whitespace().count(),
+                    detected_language: None, // Could implement language detection here
+                }),
                 error: None,
                 processing_time,
             };
@@ -247,21 +252,21 @@ impl TaskQueue {
             // Update stats
             {
                 let mut stats = self.stats.write().await;
-                stats.in_progress_tasks = stats.in_progress_tasks.saturating_sub(1);
-                stats.completed_tasks += 1;
+                stats.counts.in_progress = stats.counts.in_progress.saturating_sub(1);
+                stats.counts.completed += 1;
 
                 // Update average processing time
-                let total_completed = stats.completed_tasks as f64;
-                let current_avg = stats.average_processing_time_ms;
+                let total_completed = stats.counts.completed as f64;
+                let current_avg = stats.performance.average_processing_time_ms;
                 let new_time = processing_time.as_millis() as f64;
-                stats.average_processing_time_ms =
+                stats.performance.average_processing_time_ms =
                     (current_avg * (total_completed - 1.0) + new_time) / total_completed;
 
                 // Update success rate
-                let total_processed = stats.completed_tasks + stats.dead_tasks;
+                let total_processed = stats.counts.completed + stats.counts.dead;
                 if total_processed > 0 {
-                    stats.success_rate =
-                        (stats.completed_tasks as f64 / total_processed as f64) * 100.0;
+                    stats.performance.success_rate =
+                        (stats.counts.completed as f64 / total_processed as f64) * 100.0;
                 }
             }
         }
@@ -315,8 +320,8 @@ impl TaskQueue {
 
                 // Update stats
                 let mut stats = self.stats.write().await;
-                stats.in_progress_tasks = stats.in_progress_tasks.saturating_sub(1);
-                stats.retrying_tasks += 1;
+                stats.counts.in_progress = stats.counts.in_progress.saturating_sub(1);
+                stats.counts.retrying += 1;
             } else {
                 // Task is dead, move to failed
                 let mut failed = self.failed_tasks.write().await;
@@ -324,14 +329,14 @@ impl TaskQueue {
 
                 // Update stats
                 let mut stats = self.stats.write().await;
-                stats.in_progress_tasks = stats.in_progress_tasks.saturating_sub(1);
-                stats.dead_tasks += 1;
+                stats.counts.in_progress = stats.counts.in_progress.saturating_sub(1);
+                stats.counts.dead += 1;
 
                 // Update success rate
-                let total_processed = stats.completed_tasks + stats.dead_tasks;
+                let total_processed = stats.counts.completed + stats.counts.dead;
                 if total_processed > 0 {
-                    stats.success_rate =
-                        (stats.completed_tasks as f64 / total_processed as f64) * 100.0;
+                    stats.performance.success_rate =
+                        (stats.counts.completed as f64 / total_processed as f64) * 100.0;
                 }
             }
         }
@@ -420,8 +425,8 @@ impl TaskQueue {
                 let prioritized_task = PrioritizedTask { task };
                 pending.push(prioritized_task);
 
-                stats.retrying_tasks = stats.retrying_tasks.saturating_sub(1);
-                stats.pending_tasks += 1;
+                stats.counts.retrying = stats.counts.retrying.saturating_sub(1);
+                stats.counts.pending += 1;
             }
         }
     }
@@ -435,7 +440,7 @@ impl TaskQueue {
         {
             let in_progress = self.in_progress_tasks.read().await;
             for (task_id, task) in in_progress.iter() {
-                if let Some(started_at) = task.started_at
+                if let Some(started_at) = task.started_at()
                     && now.duration_since(started_at) > timeout_duration
                 {
                     zombie_task_ids.push(task_id.clone());
@@ -470,7 +475,7 @@ impl TaskQueue {
 
         let in_progress = self.in_progress_tasks.read().await;
         for (task_id, task) in in_progress.iter() {
-            if let Some(started_at) = task.started_at {
+            if let Some(started_at) = task.started_at() {
                 let duration = now.duration_since(started_at);
                 if duration > threshold {
                     long_running.push((task_id.clone(), duration));
@@ -555,8 +560,8 @@ impl TaskQueue {
             let mut stats = self.stats.write().await;
             *stats = state.stats;
             let pending_count = self.pending_tasks.read().await.len() as u64;
-            stats.pending_tasks = pending_count;
-            stats.in_progress_tasks = 0; // No tasks in progress after recovery
+            stats.counts.pending = pending_count;
+            stats.counts.in_progress = 0; // No tasks in progress after recovery
         }
 
         info!("Queue state restored from checkpoint");

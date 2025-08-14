@@ -1,3 +1,4 @@
+use crate::core::error::CrawlError;
 use anyhow::Error;
 use std::time::Duration;
 
@@ -5,19 +6,11 @@ use std::time::Duration;
 pub struct ErrorUtils;
 
 impl ErrorUtils {
-    /// Check if an error should trigger a retry
-    pub fn is_retryable_error(error: &Error) -> bool {
-        let error_string = error.to_string().to_lowercase();
-
-        // Network-related errors that should be retried
-        error_string.contains("timeout")
-            || error_string.contains("connection")
-            || error_string.contains("network")
-            || error_string.contains("dns")
-            || error_string.contains("temporary failure")
-            || error_string.contains("503")
-            || error_string.contains("502")
-            || error_string.contains("429") // Rate limited
+    /// Convert an anyhow error to CrawlError and check if retryable
+    pub fn categorize_and_check_retry(error: &Error) -> (CrawlError, bool) {
+        let crawl_error = CrawlError::from_anyhow_error(error);
+        let is_retryable = crawl_error.is_retryable();
+        (crawl_error, is_retryable)
     }
 
     /// Get retry delay with exponential backoff
@@ -31,33 +24,23 @@ impl ErrorUtils {
         Duration::from_millis(delay_ms.min(max_delay.as_millis() as u64))
     }
 
-    /// URL validation utilities
+    /// URL validation utilities - functional approach
     pub fn is_valid_crawl_url(url: &str) -> bool {
-        if let Ok(parsed) = url::Url::parse(url) {
-            // Check scheme
-            if !matches!(parsed.scheme(), "http" | "https") {
-                return false;
-            }
+        const BLOCKED_EXTENSIONS: &[&str] = &[".pdf", ".zip", ".exe", ".dmg"];
+        const VALID_SCHEMES: &[&str] = &["http", "https"];
 
-            // Check for suspicious patterns
-            let path = parsed.path().to_lowercase();
-            if path.ends_with(".pdf")
-                || path.ends_with(".zip")
-                || path.ends_with(".exe")
-                || path.ends_with(".dmg")
-            {
-                return false;
-            }
+        url::Url::parse(url)
+            .map(|parsed| {
+                let scheme_valid = VALID_SCHEMES.contains(&parsed.scheme());
+                let path = parsed.path().to_lowercase();
 
-            // Check for infinite redirect patterns
-            if path.contains("redirect") && path.len() > 200 {
-                return false;
-            }
+                let extension_valid = !BLOCKED_EXTENSIONS.iter().any(|ext| path.ends_with(ext));
 
-            true
-        } else {
-            false
-        }
+                let redirect_safe = !(path.contains("redirect") && path.len() > 200);
+
+                scheme_valid && extension_valid && redirect_safe
+            })
+            .unwrap_or(false)
     }
 
     /// Normalize URL for deduplication
@@ -94,19 +77,56 @@ impl ErrorUtils {
             .and_then(|u| u.host_str().map(|h| h.to_string()))
     }
 
-    /// Convert HTTP status code to descriptive error
+    /// Convert HTTP status code to descriptive error - functional approach
     pub fn http_status_to_error(status: u16) -> String {
-        match status {
-            400 => "Bad Request".to_string(),
-            401 => "Unauthorized".to_string(),
-            403 => "Forbidden".to_string(),
-            404 => "Not Found".to_string(),
-            429 => "Too Many Requests".to_string(),
-            500 => "Internal Server Error".to_string(),
-            502 => "Bad Gateway".to_string(),
-            503 => "Service Unavailable".to_string(),
-            504 => "Gateway Timeout".to_string(),
-            _ => format!("HTTP {}", status),
+        const HTTP_STATUS_MAP: &[(u16, &str)] = &[
+            (400, "Bad Request"),
+            (401, "Unauthorized"),
+            (403, "Forbidden"),
+            (404, "Not Found"),
+            (429, "Too Many Requests"),
+            (500, "Internal Server Error"),
+            (502, "Bad Gateway"),
+            (503, "Service Unavailable"),
+            (504, "Gateway Timeout"),
+        ];
+
+        HTTP_STATUS_MAP
+            .iter()
+            .find_map(|(code, msg)| (*code == status).then_some(*msg))
+            .map(String::from)
+            .unwrap_or_else(|| format!("HTTP {}", status))
+    }
+
+    /// Detect language from content using whatlang
+    /// This is a common utility that can be used across modules
+    pub fn detect_language_simple(content: &str) -> Option<String> {
+        use whatlang::{Lang, detect};
+
+        if let Some(info) = detect(content) {
+            match info.lang() {
+                Lang::Eng => Some("en".to_string()),
+                Lang::Fra => Some("fr".to_string()),
+                Lang::Deu => Some("de".to_string()),
+                Lang::Cmn => Some("zh".to_string()),
+                Lang::Jpn => Some("ja".to_string()),
+                Lang::Kor => Some("ko".to_string()),
+                _ => Some(format!("{:?}", info.lang()).to_lowercase()),
+            }
+        } else {
+            None
+        }
+    }
+
+    /// Detect language and convert to LangType
+    pub fn detect_language_typed(content: &str) -> Option<crate::core::types::LangType> {
+        use crate::core::types::LangType;
+        use whatlang::detect;
+
+        if let Some(info) = detect(content) {
+            LangType::from_detected_lang(info.lang())
+        } else {
+            None
         }
     }
 }

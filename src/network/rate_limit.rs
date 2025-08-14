@@ -56,8 +56,8 @@ impl DomainRequestTracker {
 
     /// Check if we can make a request without exceeding rate limit
     pub fn can_make_request(&mut self, rate_limit: &DomainRateLimit) -> bool {
-        self.clean_old_timestamps(rate_limit.window_size_ms);
-        self.request_timestamps.len() < rate_limit.max_requests_per_second as usize
+        self.clean_old_timestamps(rate_limit.rate.window_size_ms);
+        self.request_timestamps.len() < rate_limit.rate.max_requests_per_second as usize
     }
 
     /// Record a new request timestamp
@@ -76,7 +76,8 @@ impl DomainRequestTracker {
         }
 
         // Calculate base delay between requests
-        let base_delay = rate_limit.window_size_ms / rate_limit.max_requests_per_second as u64;
+        let base_delay =
+            rate_limit.rate.window_size_ms / rate_limit.rate.max_requests_per_second as u64;
 
         // Add some randomness to avoid thundering herd
         let mut rng = rand::thread_rng();
@@ -126,7 +127,7 @@ impl GlobalRateLimiter {
             if let Some(tracker) = trackers.get(domain) {
                 // Clone the necessary data to avoid holding the lock
                 let request_count = tracker.request_timestamps.len();
-                request_count < rate_limit.max_requests_per_second as usize
+                request_count < rate_limit.rate.max_requests_per_second as usize
             } else {
                 true // New domain, can proceed
             }
@@ -156,7 +157,7 @@ impl GlobalRateLimiter {
                 .or_insert_with(DomainRequestTracker::new);
 
             // Clean old timestamps and check again
-            tracker.clean_old_timestamps(rate_limit.window_size_ms);
+            tracker.clean_old_timestamps(rate_limit.rate.window_size_ms);
 
             if !tracker.can_make_request(&rate_limit) {
                 // Still need to wait after cleanup

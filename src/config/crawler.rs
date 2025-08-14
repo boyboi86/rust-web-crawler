@@ -3,6 +3,37 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+/// Latin word filtering configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LatinWordFilter {
+    pub exclude_numeric: bool,
+    pub excluded_words: Vec<String>,
+    pub min_word_length: usize,
+}
+
+impl Default for LatinWordFilter {
+    fn default() -> Self {
+        Self {
+            exclude_numeric: true,
+            excluded_words: vec![
+                "the".to_string(),
+                "and".to_string(),
+                "or".to_string(),
+                "but".to_string(),
+                "in".to_string(),
+                "on".to_string(),
+                "at".to_string(),
+                "to".to_string(),
+                "for".to_string(),
+                "of".to_string(),
+                "with".to_string(),
+                "by".to_string(),
+            ],
+            min_word_length: 3,
+        }
+    }
+}
+
 /// Simple logging configuration
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LoggingConfig {
@@ -35,6 +66,17 @@ pub struct WebCrawlerConfig {
     pub domain_rate_limits: Option<HashMap<String, DomainRateLimit>>,
     pub retry_config: Option<RetryConfig>,
     pub logging_config: Option<LoggingConfig>,
+
+    // Feature 1: Extension crawling option (follow links)
+    pub enable_extension_crawling: bool,
+    pub max_crawl_depth: usize,
+    pub max_total_urls: usize,
+
+    // Feature 2: Keyword filtering option
+    pub enable_keyword_filtering: bool,
+
+    // Feature 3: Latin word filtering (enhanced)
+    pub latin_word_filter: LatinWordFilter,
 }
 
 impl Default for WebCrawlerConfig {
@@ -42,7 +84,12 @@ impl Default for WebCrawlerConfig {
         Self {
             base_url: vec!["https://example.com".to_string()],
             avoid_url_extensions: vec![".pdf".to_string(), ".jpg".to_string(), ".png".to_string()],
-            target_words: vec![],
+            target_words: vec![
+                "news".to_string(),
+                "article".to_string(),
+                "content".to_string(),
+                "information".to_string(),
+            ],
             min_word_length: 50,
             proxy_pool: vec![],
             user_agent: "Mozilla/5.0 (compatible; RustCrawler/1.0)".to_string(),
@@ -51,6 +98,17 @@ impl Default for WebCrawlerConfig {
             domain_rate_limits: None,
             retry_config: Some(RetryConfig::default()),
             logging_config: Some(LoggingConfig::default()),
+
+            // Feature 1: Extension crawling - DEFAULT OFF
+            enable_extension_crawling: false,
+            max_crawl_depth: 3,
+            max_total_urls: 1000,
+
+            // Feature 2: Keyword filtering - DEFAULT OFF
+            enable_keyword_filtering: false,
+
+            // Feature 3: Latin word filtering
+            latin_word_filter: LatinWordFilter::default(),
         }
     }
 }

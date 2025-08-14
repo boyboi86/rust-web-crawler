@@ -76,7 +76,10 @@ impl WebCrawler {
         // Initialize components
         let dns_resolver = DnsCache::new();
         let robots_handler = RobotsHandler::new(client.clone());
-        let content_processor = ContentExtractor::new(config.accepted_languages.clone())?;
+        let content_processor = ContentExtractor::new(
+            config.accepted_languages.clone(),
+            config.latin_word_filter.clone(),
+        )?;
 
         // Create session ID and event logger
         let session_id = session_id.unwrap_or_else(|| uuid::Uuid::new_v4().to_string());

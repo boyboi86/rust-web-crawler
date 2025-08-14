@@ -2,6 +2,7 @@
 #[derive(Debug, Clone)]
 pub enum CrawlError {
     // Network-related errors
+    NetworkError(String),
     NetworkTimeout,
     ConnectionRefused,
     DnsResolutionFailed(String),
@@ -30,6 +31,7 @@ pub enum CrawlError {
 impl std::fmt::Display for CrawlError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            CrawlError::NetworkError(msg) => write!(f, "Network error: {}", msg),
             CrawlError::NetworkTimeout => write!(f, "Network timeout"),
             CrawlError::ConnectionRefused => write!(f, "Connection refused"),
             CrawlError::DnsResolutionFailed(domain) => {
@@ -58,7 +60,8 @@ impl CrawlError {
     pub fn is_retryable(&self) -> bool {
         matches!(
             self,
-            CrawlError::NetworkTimeout
+            CrawlError::NetworkError(_)
+                | CrawlError::NetworkTimeout
                 | CrawlError::ConnectionRefused
                 | CrawlError::DnsResolutionFailed(_)
                 | CrawlError::HttpError(500..=599)
@@ -72,9 +75,10 @@ impl CrawlError {
         use crate::core::types::ErrorSeverity;
 
         match self {
-            CrawlError::NetworkTimeout | CrawlError::ConnectionRefused | CrawlError::ProxyError => {
-                ErrorSeverity::High
-            }
+            CrawlError::NetworkError(_)
+            | CrawlError::NetworkTimeout
+            | CrawlError::ConnectionRefused
+            | CrawlError::ProxyError => ErrorSeverity::High,
             CrawlError::HttpError(500..=599) | CrawlError::DnsResolutionFailed(_) => {
                 ErrorSeverity::Medium
             }
@@ -90,22 +94,17 @@ impl CrawlError {
 
     /// Categorize a generic error into CrawlError
     pub fn from_anyhow_error(error: &anyhow::Error) -> Self {
-        let error_str = error.to_string().to_lowercase();
+        let error_str = error.to_string().to_lowercase(); // Scoped variable for DRY
+        let error_msg = error.to_string(); // Scoped variable for original message
 
-        if error_str.contains("timeout") {
-            CrawlError::NetworkTimeout
-        } else if error_str.contains("connection refused") {
-            CrawlError::ConnectionRefused
-        } else if error_str.contains("dns") {
-            CrawlError::DnsResolutionFailed(error.to_string())
-        } else if error_str.contains("proxy") {
-            CrawlError::ProxyError
-        } else if error_str.contains("redirect") {
-            CrawlError::RedirectLoop
-        } else if error_str.contains("url") || error_str.contains("parse") {
-            CrawlError::InvalidUrl(error.to_string())
-        } else {
-            CrawlError::UnknownError(error.to_string())
+        match error_str.as_str() {
+            s if s.contains("timeout") => CrawlError::NetworkTimeout,
+            s if s.contains("connection refused") => CrawlError::ConnectionRefused,
+            s if s.contains("dns") => CrawlError::DnsResolutionFailed(error_msg),
+            s if s.contains("proxy") => CrawlError::ProxyError,
+            s if s.contains("redirect") => CrawlError::RedirectLoop,
+            s if s.contains("url") || s.contains("parse") => CrawlError::InvalidUrl(error_msg),
+            _ => CrawlError::UnknownError(error_msg),
         }
     }
 }

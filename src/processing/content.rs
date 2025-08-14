@@ -3,23 +3,28 @@ use lol_html::{HtmlRewriter, Settings, element};
 use unicode_segmentation::UnicodeSegmentation;
 use whatlang::detect;
 
-use crate::config::defaults;
+use crate::config::{LatinWordFilter, defaults};
 use crate::core::{ContentProcessor, LangType};
 
 /// Content processor with text extraction and validation
 pub struct ContentExtractor {
     regex_cache: regex::Regex,
     accepted_languages: Vec<LangType>,
+    latin_word_filter: LatinWordFilter,
 }
 
 impl ContentExtractor {
-    pub fn new(accepted_languages: Vec<LangType>) -> Result<Self, Error> {
+    pub fn new(
+        accepted_languages: Vec<LangType>,
+        latin_word_filter: LatinWordFilter,
+    ) -> Result<Self, Error> {
         // Pre-compile regex for HTML cleaning
         let regex_cache = regex::Regex::new(r"<[^>]*>")?;
 
         Ok(Self {
             regex_cache,
             accepted_languages,
+            latin_word_filter,
         })
     }
 }
@@ -120,11 +125,38 @@ impl ContentProcessor for ContentExtractor {
                     extracted_text.unicode_words().count()
                 }
             } else {
-                // For Latin-based languages, filter out very short words (< 3 characters)
-                extracted_text
+                // For Latin-based languages, apply advanced filtering
+                let filtered_words: Vec<&str> = extracted_text
                     .unicode_words()
-                    .filter(|word| word.len() >= defaults::MIN_WORD_LENGTH_LATIN)
-                    .count()
+                    .filter(|word| {
+                        // Apply minimum length filter
+                        if word.len() < self.latin_word_filter.min_word_length {
+                            return false;
+                        }
+
+                        // Exclude numeric words if configured
+                        if self.latin_word_filter.exclude_numeric
+                            && word.chars().all(|c| c.is_numeric())
+                        {
+                            return false;
+                        }
+
+                        // Exclude user-defined words (case-insensitive)
+                        let word_lower = word.to_lowercase();
+                        if self
+                            .latin_word_filter
+                            .excluded_words
+                            .iter()
+                            .any(|excluded| excluded.to_lowercase() == word_lower)
+                        {
+                            return false;
+                        }
+
+                        true
+                    })
+                    .collect();
+
+                filtered_words.len()
             };
 
             // 4. Apply minimum word count threshold
@@ -178,6 +210,47 @@ impl ContentProcessor for ContentExtractor {
             }
         } else {
             Ok((String::new(), 0))
+        }
+    }
+}
+
+impl ContentExtractor {
+    /// Filter content based on target keywords
+    pub fn filter_content_by_keywords(
+        &self,
+        content: &str,
+        target_words: &[String],
+    ) -> Option<String> {
+        if target_words.is_empty() {
+            return Some(content.to_string());
+        }
+
+        let content_lower = content.to_lowercase();
+
+        // Check if content contains any target words
+        let contains_target = target_words
+            .iter()
+            .any(|word| content_lower.contains(&word.to_lowercase()));
+
+        if contains_target {
+            // Extract sentences containing target words
+            let filtered_sentences: Vec<&str> = content
+                .split('.')
+                .filter(|sentence| {
+                    let sentence_lower = sentence.to_lowercase();
+                    target_words
+                        .iter()
+                        .any(|word| sentence_lower.contains(&word.to_lowercase()))
+                })
+                .collect();
+
+            if !filtered_sentences.is_empty() {
+                Some(filtered_sentences.join(". ") + ".")
+            } else {
+                None
+            }
+        } else {
+            None
         }
     }
 }

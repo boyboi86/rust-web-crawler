@@ -1,0 +1,21 @@
+{
+  "url": "https://example.com/",
+  "title": null,
+  "content": null,
+  "word_count": 0,
+  "language": null,
+  "links_found": [],
+  "metadata": {
+    "status_code": null,
+    "content_type": "text/html",
+    "content_length": null,
+    "response_time_ms": 4,
+    "depth": 0,
+    "parent_url": null,
+    "crawl_session_id": "9589cd51-e132-46ad-908d-43a04040404d"
+  },
+  "timestamp": {
+    "secs_since_epoch": 1755164254,
+    "nanos_since_epoch": 828423900
+  }
+}
