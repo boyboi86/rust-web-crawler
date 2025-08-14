@@ -19,6 +19,13 @@ pub enum CrawlError {
     ParsingError,
     EncodingError,
 
+    // Processing feature errors
+    KeywordConfigError(String),
+    KeywordNotFound,
+    ExtensiveConfigError(String),
+    CleaningConfigError(String),
+    CleaningRuleError(String),
+
     // Policy-related errors
     RobotsBlocked,
     RateLimited,
@@ -45,6 +52,17 @@ impl std::fmt::Display for CrawlError {
             CrawlError::LanguageNotSupported => write!(f, "Language not supported"),
             CrawlError::ParsingError => write!(f, "HTML parsing error"),
             CrawlError::EncodingError => write!(f, "Text encoding error"),
+            CrawlError::KeywordConfigError(msg) => {
+                write!(f, "Keyword configuration error: {}", msg)
+            }
+            CrawlError::KeywordNotFound => write!(f, "Target keywords not found in content"),
+            CrawlError::ExtensiveConfigError(msg) => {
+                write!(f, "Extensive crawling configuration error: {}", msg)
+            }
+            CrawlError::CleaningConfigError(msg) => {
+                write!(f, "Text cleaning configuration error: {}", msg)
+            }
+            CrawlError::CleaningRuleError(msg) => write!(f, "Text cleaning rule error: {}", msg),
             CrawlError::RobotsBlocked => write!(f, "Blocked by robots.txt"),
             CrawlError::RateLimited => write!(f, "Rate limited"),
             CrawlError::Forbidden => write!(f, "Access forbidden"),
@@ -86,6 +104,11 @@ impl CrawlError {
             CrawlError::RedirectLoop | CrawlError::InvalidUrl(_) => ErrorSeverity::Medium,
             CrawlError::ContentTooShort | CrawlError::LanguageNotSupported => ErrorSeverity::Low,
             CrawlError::ParsingError | CrawlError::EncodingError => ErrorSeverity::Medium,
+            CrawlError::KeywordConfigError(_)
+            | CrawlError::ExtensiveConfigError(_)
+            | CrawlError::CleaningConfigError(_) => ErrorSeverity::High,
+            CrawlError::KeywordNotFound => ErrorSeverity::Low,
+            CrawlError::CleaningRuleError(_) => ErrorSeverity::Medium,
             CrawlError::RobotsBlocked | CrawlError::Forbidden => ErrorSeverity::Low,
             CrawlError::HttpError(_) => ErrorSeverity::Medium,
             CrawlError::UnknownError(_) => ErrorSeverity::Critical,

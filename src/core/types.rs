@@ -58,7 +58,7 @@ impl Default for TaskTiming {
 }
 
 /// URL serialization helper
-mod url_serde {
+pub mod url_serde {
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
     use url::Url;
 
@@ -337,8 +337,10 @@ pub struct CrawlTask {
     pub status: TaskStatus,
     pub attempt_count: u32,
     pub max_retries: u32,
+    pub retry_count: u32, // Added for backward compatibility
     pub depth: usize,
     pub error_message: OptionString,
+    pub user_agent: String, // Added for backward compatibility
 
     // Building blocks for composition - timing is handled by TaskTiming
     #[serde(skip)]
@@ -358,9 +360,11 @@ impl CrawlTask {
             status: TaskStatus::Pending,
             attempt_count: 0,
             max_retries,
-            depth: 0, // Default depth
+            retry_count: 0, // Initialize to 0
+            depth: 0,       // Default depth
             error_message: None,
-            timing: TaskTiming::new(), // Use building block
+            user_agent: "rust-web-crawler/1.0".to_string(), // Default user agent
+            timing: TaskTiming::new(),                      // Use building block
         }
     }
 
@@ -379,9 +383,11 @@ impl CrawlTask {
             status: TaskStatus::Pending,
             attempt_count: 0,
             max_retries,
+            retry_count: 0, // Initialize to 0
             depth,
             error_message: None,
-            timing: TaskTiming::new(), // Use building block
+            user_agent: "rust-web-crawler/1.0".to_string(), // Default user agent
+            timing: TaskTiming::new(),                      // Use building block
         }
     }
 

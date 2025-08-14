@@ -1,1 +1,16 @@
 /target
+
+# Ignore runtime data directories
+/crawl_data/
+/demo_output/
+
+# OS and editor files
+.DS_Store
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/

@@ -32,20 +32,65 @@ pub use network::{
     ClientManager, DnsCache, DomainRequestTracker, GlobalRateLimiter, RobotsCache, RobotsHandler,
 };
 
-// Processing components - unified feature-based exports
+// Processing components - unified feature-based exports (with Level 3 enhancements)
 pub use processing::{
+    CategoryPriorityAdjustments,
+    CharacterFilter,
+    CleaningConfig,
+    CleaningEngine,
+    CleaningResult,
+    CleaningRule,
+    CleaningStats,
+    // Language detection and analysis (Enhanced with Feature 3: Text cleaning)
     ContentDifficulty,
-    // Content extraction and HTML processing
+    // Content extraction and HTML processing (Enhanced with Feature 1: Keyword filtering)
     ContentExtractor,
+    CrawlDepth,
+    DepthPriorityAdjustments,
+
+    DiscoveryStats,
+    DomainScope,
+    ExtensiveConfig,
+    ExtensiveQueueManager,
+    // Link discovery and URL validation (Enhanced with Feature 2: Extensive crawling)
     ExtractedLink,
-    // Link discovery and URL validation
+    KeywordConfig,
+    KeywordExtractor,
+    KeywordMatchInfo,
+    KeywordMatcher,
+    KeywordMode,
+    KeywordOptions,
+    LanguageFilter,
+    LengthFilter,
+    LinkCategory,
     LinkExtractor,
+    LinkFilter,
+    LinkProcessor,
+    LinkStats,
     LinkType,
-    // Language detection and analysis
+    MatchResult,
+    MatchStats,
+
+    PriorityConfig,
+    PriorityThresholds,
+    ProcessedLink,
+    QueueStatus,
+    RuleType,
+    TextCleaner,
+    WordFilter,
+    analyze_language_stats,
     detect_language,
+    detect_language_type,
+    estimate_content_difficulty,
+    estimate_reading_time,
     extract_links_from_html,
     extract_title_from_html,
+    get_language_confidence,
+    is_asset_url,
+    is_document_url,
+    is_same_domain,
     is_valid_crawl_url,
+    normalize_url,
 };
 
 // Session management - core functionality

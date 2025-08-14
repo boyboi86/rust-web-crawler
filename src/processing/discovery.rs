@@ -1,13 +1,23 @@
-/// Link discovery and URL validation
-/// 
-/// This module provides comprehensive link extraction, discovery, and URL validation
-/// functionality for web crawling operations.
-
-use crate::core::ErrorUtils;
 use crate::config::WebCrawlerConfig;
+/// Link discovery and URL validation
+///
+/// This module provides comprehensive link extraction, discovery, and URL validation
+/// functionality for web crawling operations, including:
+/// - Basic link extraction and categorization
+/// - Enhanced extensive crawling with auto-queue expansion (Feature 2)
+use crate::core::ErrorUtils;
+use crate::core::types::url_serde;
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use url::Url;
+
+// Re-export extensive crawling components (Level 3 extension)
+pub use crate::processing::extensive::{
+    CategoryPriorityAdjustments, CrawlDepth, DepthPriorityAdjustments, DiscoveryStats, DomainScope,
+    ExtensiveConfig, ExtensiveQueueManager, LinkCategory, LinkFilter, LinkProcessor,
+    PriorityConfig, PriorityThresholds, ProcessedLink, QueueStatus,
+};
 
 /// Link extraction and discovery functionality
 pub struct LinkExtractor {
@@ -17,15 +27,16 @@ pub struct LinkExtractor {
     _respect_robots_txt: bool, // Prefixed with _ to indicate intentionally unused for now
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExtractedLink {
+    #[serde(with = "url_serde")]
     pub url: Url,
     pub anchor_text: String,
     pub link_type: LinkType,
     pub depth: usize,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum LinkType {
     Internal,  // Same domain
     External,  // Different domain
@@ -476,8 +487,8 @@ pub fn is_same_domain(url1: &Url, url2: &Url) -> bool {
 /// Check if URL is an asset (CSS, JS, images)
 pub fn is_asset_url(path: &str) -> bool {
     let asset_extensions = [
-        ".css", ".js", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".ico", ".woff", ".woff2",
-        ".ttf", ".eot",
+        ".css", ".js", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".ico", ".woff", ".woff2", ".ttf",
+        ".eot",
     ];
 
     asset_extensions.iter().any(|ext| path.ends_with(ext))
@@ -486,8 +497,7 @@ pub fn is_asset_url(path: &str) -> bool {
 /// Check if URL is a document
 pub fn is_document_url(path: &str) -> bool {
     let doc_extensions = [
-        ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".zip", ".rar", ".tar",
-        ".gz",
+        ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".zip", ".rar", ".tar", ".gz",
     ];
 
     doc_extensions.iter().any(|ext| path.ends_with(ext))

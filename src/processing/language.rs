@@ -1,10 +1,16 @@
+use crate::core::LangType;
 /// Language detection and analysis
-/// 
+///
 /// This module provides comprehensive language detection and analysis capabilities,
 /// integrating with the core LangType system and providing utility functions.
-
+/// Enhanced with advanced text cleaning and preprocessing (Feature 3).
 use whatlang::{Lang, detect};
-use crate::core::LangType;
+
+// Re-export text cleaning components (Level 3 extension)
+pub use crate::processing::cleaning::{
+    CharacterFilter, CleaningConfig, CleaningEngine, CleaningResult, CleaningRule, CleaningStats,
+    LanguageFilter, LengthFilter, RuleType, TextCleaner, WordFilter,
+};
 
 /// Detect language from content using whatlang crate
 pub fn detect_language(content: &str) -> Option<String> {
@@ -61,7 +67,7 @@ pub fn language_code_to_name(code: &str) -> &'static str {
 pub fn estimate_reading_time(word_count: usize) -> std::time::Duration {
     // Average reading speed is about 200-250 words per minute
     const WORDS_PER_MINUTE: f64 = 225.0;
-    
+
     let minutes = word_count as f64 / WORDS_PER_MINUTE;
     std::time::Duration::from_secs_f64(minutes * 60.0)
 }
@@ -72,10 +78,10 @@ pub fn estimate_content_difficulty(content: &str) -> ContentDifficulty {
     if words.is_empty() {
         return ContentDifficulty::Unknown;
     }
-    
+
     let total_chars: usize = words.iter().map(|w| w.chars().count()).sum();
     let avg_word_length = total_chars as f64 / words.len() as f64;
-    
+
     match avg_word_length {
         x if x < 4.0 => ContentDifficulty::Easy,
         x if x < 5.5 => ContentDifficulty::Medium,
@@ -123,7 +129,7 @@ pub struct LanguageStats {
 
 pub fn analyze_language_stats(content: &str) -> LanguageStats {
     let word_count = content.split_whitespace().count();
-    
+
     LanguageStats {
         detected_language: detect_language_type(content),
         confidence: get_language_confidence(content).unwrap_or(0.0),

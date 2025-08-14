@@ -4,6 +4,7 @@
 /// - Content extraction and validation (from processing/content.rs)
 /// - HTML parsing utilities (from utils/html.rs)
 /// - Text analysis and language detection integration
+/// - Enhanced keyword-based content filtering (Feature 1)
 use anyhow::Error;
 use lol_html::{HtmlRewriter, Settings, element};
 use regex::Regex;
@@ -12,6 +13,12 @@ use whatlang::detect;
 
 use crate::config::{LatinWordFilter, defaults};
 use crate::core::{ContentProcessor, LangType};
+
+// Re-export keyword filtering components (Level 3 extension)
+pub use crate::processing::keyword::{
+    KeywordConfig, KeywordExtractor, KeywordMatchInfo, KeywordMatcher, KeywordMode, KeywordOptions,
+    MatchResult, MatchStats,
+};
 
 /// Content processor with text extraction and validation
 pub struct ContentExtractor {
