@@ -6,6 +6,7 @@ pub mod manager;
 pub mod result_collector;
 pub mod statistics;
 
-pub use manager::{CrawlSession, CrawlSessionConfig, SessionResult};
+// Re-export main functionality
+pub use manager::{CrawlResultData, CrawlSession, CrawlSessionConfig, SessionResult};
 pub use result_collector::ResultCollector;
 pub use statistics::{RealTimeStats, SessionStatistics};

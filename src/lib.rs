@@ -1,14 +1,20 @@
-// Modern modular organization for Rust web crawler
-pub mod config;
-pub mod core;
-pub mod crawler;
-pub mod logging;
-pub mod network;
-pub mod processing;
-pub mod queue;
-pub mod session;
-pub mod storage;
-pub mod utils;
+/// Modern feature-based organization for Rust web crawler
+///
+/// This architecture organizes modules by features and functionality rather than
+/// technical implementation details, following the 4 design principles:
+/// 1. Modules by features/logic with sub-modules for sub-features
+/// 2. Building blocks assembled into unified modules
+/// 3. One level down organization (feature/sub-feature)
+/// 4. Logical cohesion over technical separation
+pub mod config; // Configuration management
+pub mod core; // Core types and utilities
+pub mod crawler; // Main crawling engine
+pub mod logging; // Unified logging system
+pub mod network; // Network layer components
+pub mod processing; // Content processing and analysis
+pub mod queue; // Task queue management
+pub mod session; // Session management and orchestration
+pub mod storage; // Data persistence
 
 // Re-exports for convenience
 // Core types and utilities
@@ -26,35 +32,73 @@ pub use network::{
     ClientManager, DnsCache, DomainRequestTracker, GlobalRateLimiter, RobotsCache, RobotsHandler,
 };
 
-// Processing components
-pub use processing::{ContentExtractor, LinkExtractor};
-
-// Queue management
-pub use queue::{TaskQueue, TtlCache};
-
-// Session management
-pub use session::{CrawlSession, CrawlSessionConfig, SessionResult};
-
-// Storage and analytics
-pub use storage::{
-    CrawlAnalytics, CrawlMetadata, CrawlSessionSummary, CrawlerMetrics, DataStorage,
-    MetricsSnapshot, OutputFormat, StoredCrawlResult,
-};
-
-// Logging components
-pub use logging::{CrawlEvent, CrawlEventLogger, ErrorEvent, PerformanceEvent};
-
-// Configuration (including logging config and presets)
-pub use config::LoggingConfig;
-
-// Utilities
-pub use utils::{
-    detect_language, extract_links_from_html, extract_title_from_html, init_logging,
+// Processing components - unified feature-based exports
+pub use processing::{
+    ContentDifficulty,
+    // Content extraction and HTML processing
+    ContentExtractor,
+    ExtractedLink,
+    // Link discovery and URL validation
+    LinkExtractor,
+    LinkType,
+    // Language detection and analysis
+    detect_language,
+    extract_links_from_html,
+    extract_title_from_html,
     is_valid_crawl_url,
 };
 
-// Main crawler
+// Session management - core functionality
+pub use session::{CrawlResultData, CrawlSession, CrawlSessionConfig, SessionResult};
+
+// Logging - unified system
+pub use logging::{
+    CrawlEvent,
+    // Advanced event logging
+    CrawlEventLogger,
+    // Formatting
+    CrawlLogFormatter,
+    ErrorEvent,
+    JsonLogFormatter,
+    PerformanceEvent,
+    configure_logging_for_environment,
+    init_json_logging,
+    // Basic logging setup
+    init_logging,
+    init_logging_with_level,
+};
+
+// Storage components
+pub use storage::{CrawlMetadata, DataStorage, OutputFormat, StoredCrawlResult};
+
+// Queue management
+pub use queue::TaskQueue;
+
+// Crawler components
 pub use crawler::WebCrawler;
 
-/// Library version
+/// Library metadata and version information
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const NAME: &str = env!("CARGO_PKG_NAME");
+
+/// Feature-based re-exports for different use cases
+
+/// Essential crawling functionality
+pub mod essential {
+    pub use crate::{ContentExtractor, CrawlSession, CrawlSessionConfig, WebCrawler};
+}
+
+/// Content processing functionality
+pub mod content {
+    pub use crate::processing::*;
+}
+
+/// Network management functionality  
+pub mod network_management {
+    pub use crate::network::*;
+}
+
+/// Logging and monitoring functionality
+pub mod monitoring {
+    pub use crate::logging::*;
+}

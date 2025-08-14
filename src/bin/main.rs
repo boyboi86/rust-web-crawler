@@ -3,9 +3,7 @@
 /// This demonstrates how to use the refactored architecture with minimal boilerplate
 use anyhow::Error;
 use rust_web_crawler::{
-    config::presets::create_production_session_config,
-    session::CrawlSession,
-    utils::{init_logging, log_session_summary},
+    config::presets::create_production_session_config, logging::init_logging, session::CrawlSession,
 };
 use tracing::info;
 use url::Url;
@@ -34,7 +32,23 @@ async fn main() -> Result<(), Error> {
     let session_result = session.execute_crawl(target_urls).await?;
 
     // Log final statistics
-    log_session_summary(&session_result);
+    info!("=== Crawl Session Summary ===");
+    info!(
+        "Total URLs processed: {}",
+        session_result.total_urls_processed
+    );
+    info!("Successful crawls: {}", session_result.successful_crawls);
+    info!("Failed crawls: {}", session_result.failed_crawls);
+    if session_result.total_urls_processed > 0 {
+        let success_rate = (session_result.successful_crawls as f64
+            / session_result.total_urls_processed as f64)
+            * 100.0;
+        info!("Success rate: {:.1}%", success_rate);
+    }
+    info!(
+        "Session duration: {:.2}s",
+        session_result.total_duration.as_secs_f64()
+    );
 
     info!("✅ Crawl session completed successfully!");
     info!("📊 Results stored in configured storage location");
