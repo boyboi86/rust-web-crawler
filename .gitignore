@@ -4,6 +4,12 @@
 /crawl_data/
 /demo_output/
 
+# Frontend dependencies and build artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/package-lock.json
+
 # OS and editor files
 .DS_Store
 .vscode/
@@ -14,3 +20,18 @@
 # Logs
 *.log
 logs/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Tauri build artifacts
+src-tauri/target/
+src-tauri/WixTools/
+
+# IDE files
+.idea/
+*.iml
