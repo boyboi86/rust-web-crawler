@@ -61,7 +61,6 @@ export interface PresetConfig {
 }
 
 function App() {
-  const [crawlResults, setCrawlResults] = useState<CrawlResult[]>([])
   const [crawlStatus, setCrawlStatus] = useState<CrawlStatus | null>(null)
   const [config, setConfig] = useState<WebCrawlerConfig | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -150,7 +149,6 @@ function App() {
 
   const handleStartCrawl = async (startUrl: string, crawlerConfig: WebCrawlerConfig) => {
     setIsLoading(true)
-    setCrawlResults([])
     
     try {
       // Sanitize and validate the start URL
@@ -215,32 +213,6 @@ function App() {
         is_running: false
       }
       setCrawlStatus(mockStatus)
-    }
-  }
-
-  const handleGetResults = async () => {
-    try {
-      const results: CrawlResult[] = await invoke('get_crawl_results')
-      setCrawlResults(results)
-    } catch (error) {
-      console.warn('Tauri backend not available, providing mock results:', error)
-      const mockResults: CrawlResult[] = [
-        {
-          url: "https://example.com",
-          title: "Example Domain",
-          content: "This is an example page showing how the web crawler interface works in development mode.",
-          status_code: 200,
-          timestamp: new Date().toISOString()
-        },
-        {
-          url: "https://example.com/about",
-          title: "About Example",
-          content: "More example content to demonstrate the results display functionality.",
-          status_code: 200,
-          timestamp: new Date().toISOString()
-        }
-      ]
-      setCrawlResults(mockResults)
     }
   }
 
@@ -448,11 +420,9 @@ function App() {
               <CrawlerDashboard
                 config={config}
                 crawlStatus={crawlStatus}
-                crawlResults={crawlResults}
                 isLoading={isLoading}
                 onStartCrawl={handleStartCrawl}
                 onStopCrawl={handleStopCrawl}
-                onGetResults={handleGetResults}
                 onConfigChange={handleConfigChange}
               />
             </div>

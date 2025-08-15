@@ -18,8 +18,7 @@ function NumberInput({
   min,
   max,
   step = 1,
-  className = '',
-  placeholder
+  className = ''
 }: NumberInputProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseInt(e.target.value) || 0
@@ -27,24 +26,24 @@ function NumberInput({
   }
 
   return (
-    <div className="d-flex align-items-center">
-      {label && (
-        <label htmlFor={id} className="form-label me-2 mb-0 google-label">
-          {label}:
-        </label>
-      )}
+    <div className="material-group">
       <input
         id={id}
         type="number"
-        className={`form-control form-control-sm google-input ${className}`}
+        className={`material-input ${className}`}
         value={value}
         onChange={handleChange}
         min={min}
         max={max}
         step={step}
-        placeholder={placeholder}
-        style={{ width: '100px' }}
+        placeholder=" "
       />
+      {label && (
+        <label htmlFor={id} className="material-label">
+          {label}
+        </label>
+      )}
+      <span className="material-bar"></span>
     </div>
   )
 }

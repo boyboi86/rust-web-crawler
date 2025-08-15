@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { WebCrawlerConfig } from '../../App'
-import { Toggle } from '../ui'
-import { LanguageDropdown } from '../forms'
+import { Toggle, MaterialInput } from '../ui'
+import { NumberInput } from '../forms'
 
 interface SettingsSidebarProps {
   isOpen: boolean
@@ -17,7 +17,7 @@ const AVAILABLE_PRESETS = [
   { name: 'demo', label: 'Demo', description: 'Demonstration configuration' }
 ]
 
-function SettingsSidebar({ onClose, config, onConfigChange, onApplyPreset }: SettingsSidebarProps) {
+function SettingsSidebar({ isOpen, onClose, config, onConfigChange, onApplyPreset }: SettingsSidebarProps) {
   const [activeSection, setActiveSection] = useState<'presets' | 'general' | 'filtering' | 'advanced'>('presets')
 
   const handleInputChange = (field: string, value: any) => {
@@ -68,51 +68,36 @@ function SettingsSidebar({ onClose, config, onConfigChange, onApplyPreset }: Set
     <div className="d-flex flex-column gap-4">
       <h3 className="google-header h5">General Settings</h3>
       
-      <div className="row g-3">
+      <div className="row g-4">
         <div className="col-12">
-          <label className="form-label google-subheader">Max Crawl Depth</label>
-          <input
-            type="number"
-            min="1"
-            max="10"
+          <NumberInput
+            id="maxCrawlDepth"
+            label="Max Crawl Depth"
             value={config.max_crawl_depth}
-            onChange={(e) => handleInputChange('max_crawl_depth', parseInt(e.target.value) || 1)}
-            className="form-control"
+            onChange={(value) => handleInputChange('max_crawl_depth', value)}
+            min={1}
+            max={10}
           />
         </div>
         
         <div className="col-12">
-          <label className="form-label google-subheader">Max Total URLs</label>
-          <input
-            type="number"
-            min="1"
-            max="10000"
+          <NumberInput
+            id="maxTotalUrls"
+            label="Max Total URLs"
             value={config.max_total_urls}
-            onChange={(e) => handleInputChange('max_total_urls', parseInt(e.target.value) || 1)}
-            className="form-control"
+            onChange={(value) => handleInputChange('max_total_urls', value)}
+            min={1}
+            max={10000}
           />
         </div>
 
         <div className="col-12">
-          <div className="form-group-material">
-            <input
-              type="text"
-              value={config.user_agent}
-              onChange={(e) => handleInputChange('user_agent', e.target.value)}
-              placeholder=" "
-              className="form-control-material"
-              id="userAgent"
-            />
-            <span className="material-bar"></span>
-            <label htmlFor="userAgent" className="form-label">User Agent</label>
-          </div>
-        </div>
-
-        <div className="col-12">
-          <label className="form-label google-subheader">Accepted Languages</label>
-          <LanguageDropdown
-            selectedLanguages={config.accepted_languages}
-            onChange={(languages) => handleInputChange('accepted_languages', languages)}
+          <MaterialInput
+            id="userAgent"
+            label="User Agent"
+            value={config.user_agent}
+            onChange={(value) => handleInputChange('user_agent', value)}
+            type="text"
           />
         </div>
       </div>
@@ -123,188 +108,191 @@ function SettingsSidebar({ onClose, config, onConfigChange, onApplyPreset }: Set
     <div className="d-flex flex-column gap-4">
       <h3 className="google-header h5">Content Filtering</h3>
       
-      <div className="row g-3">
+      <div className="row g-4">
         <div className="col-12">
-          <div className="form-group-material">
-            <input
-              type="text"
-              value={config.target_words.join(', ')}
-              onChange={(e) => handleInputChange('target_words', e.target.value.split(',').map(w => w.trim()).filter(w => w))}
-              placeholder=" "
-              className="form-control-material"
-              id="filterTargetWords"
-            />
-            <span className="material-bar"></span>
-            <label htmlFor="filterTargetWords" className="form-label">Target Words (comma-separated)</label>
-          </div>
-        </div>
-
-        <div className="col-12">
-          <label className="form-label google-subheader">Minimum Word Length</label>
-          <input
-            type="number"
-            min="1"
-            max="50"
-            value={config.min_word_length}
-            onChange={(e) => handleInputChange('min_word_length', parseInt(e.target.value) || 1)}
-            className="form-control"
-          />
-        </div>
-
-        <div className="col-12">
-          <label className="form-label google-subheader">Excluded Words (comma-separated)</label>
-          <input
+          <MaterialInput
+            id="filterTargetWords"
+            label="Target Words (comma-separated)"
+            value={config.target_words.join(', ')}
+            onChange={(value) => handleInputChange('target_words', value.split(',').map(w => w.trim()).filter(w => w))}
             type="text"
-            value={config.latin_word_filter.excluded_words.join(', ')}
-            onChange={(e) => handleInputChange('latin_word_filter.excluded_words', e.target.value.split(',').map(w => w.trim()).filter(w => w))}
-            placeholder="the, and, or, but"
-            className="form-control"
           />
+        </div>
+
+        <div className="col-12">
+          <NumberInput
+            id="minWordLength"
+            label="Minimum Word Length"
+            value={config.min_word_length}
+            onChange={(value) => handleInputChange('min_word_length', value)}
+            min={1}
+            max={50}
+          />
+        </div>
+
+        <div className="col-12">
+          <MaterialInput
+            id="excludedWords"
+            label="Excluded Words (comma-separated)"
+            value={config.latin_word_filter.excluded_words.join(', ')}
+            onChange={(value) => handleInputChange('latin_word_filter.excluded_words', value.split(',').map(w => w.trim()).filter(w => w))}
+            type="text"
+          />
+        </div>
+
+        <div className="col-12">
+          <div className="material-group">
+            <select
+              value={config.accepted_languages.length > 0 ? config.accepted_languages[0] : ''}
+              onChange={(e) => {
+                const value = e.target.value
+                if (value) {
+                  handleInputChange('accepted_languages', [value])
+                } else {
+                  handleInputChange('accepted_languages', [])
+                }
+              }}
+              className="material-input"
+            >
+              <option value="">Select Language...</option>
+              <option value="en">🇺🇸 English</option>
+              <option value="es">🇪🇸 Spanish</option>
+              <option value="fr">🇫🇷 French</option>
+              <option value="de">🇩🇪 German</option>
+              <option value="it">🇮🇹 Italian</option>
+              <option value="pt">🇵🇹 Portuguese</option>
+              <option value="ru">🇷🇺 Russian</option>
+              <option value="ja">🇯🇵 Japanese</option>
+              <option value="ko">🇰🇷 Korean</option>
+              <option value="zh">🇨🇳 Chinese</option>
+              <option value="ar">🇸🇦 Arabic</option>
+              <option value="hi">🇮🇳 Hindi</option>
+            </select>
+            <label className="material-label">Accepted Language</label>
+            <span className="material-bar"></span>
+          </div>
         </div>
       </div>
     </div>
   )
 
   const renderAdvancedSection = () => (
-    <div className="d-flex flex-column gap-4">
+    <div className="d-flex flex-column gap-5">
       <h3 className="google-header h5">Advanced Settings</h3>
       
       {/* Proxy Configuration */}
-      <div className="card bg-light">
-        <div className="card-body p-3">
-          <h6 className="card-title google-subheader">Proxy Configuration</h6>
-          <div>
-            <label className="form-label small">Proxy Pool (one per line)</label>
-            <textarea
-              value={config.proxy_pool.join('\n')}
-              onChange={(e) => handleInputChange('proxy_pool', e.target.value.split('\n').filter(line => line.trim()))}
-              placeholder="http://proxy1.example.com:8080&#10;http://proxy2.example.com:8080"
-              rows={3}
-              className="form-control"
-            />
-          </div>
+      <div className="bg-transparent">
+        <h6 className="google-subheader mb-4">Proxy Configuration</h6>
+        <div>
+          <label className="form-label google-text mb-2">Proxy Pool (one per line)</label>
+          <textarea
+            value={config.proxy_pool.join('\n')}
+            onChange={(e) => handleInputChange('proxy_pool', e.target.value.split('\n').filter(line => line.trim()))}
+            placeholder="http://proxy1.example.com:8080&#10;http://proxy2.example.com:8080"
+            rows={3}
+            className="form-control border-0 border-bottom rounded-0 bg-transparent"
+            style={{ borderBottomWidth: '1px !important' }}
+          />
         </div>
       </div>
 
       {/* Rate Limiting */}
-      <div className="card bg-light">
-        <div className="card-body p-3">
-          <h6 className="card-title google-subheader">Rate Limiting</h6>
-          <div className="row g-2">
-            <div className="col-6">
-              <label className="form-label small">Max Requests/sec</label>
-              <input
-                type="number"
-                min="1"
-                max="100"
-                value={config.max_requests_per_second}
-                onChange={(e) => handleInputChange('max_requests_per_second', parseInt(e.target.value) || 1)}
-                className="form-control form-control-sm"
-              />
-            </div>
-            <div className="col-6">
-              <label className="form-label small">Window Size (ms)</label>
-              <input
-                type="number"
-                min="100"
-                max="10000"
-                value={config.window_size_ms}
-                onChange={(e) => handleInputChange('window_size_ms', parseInt(e.target.value) || 1000)}
-                className="form-control form-control-sm"
-              />
-            </div>
-          </div>
+      <div className="bg-transparent">
+        <h6 className="google-subheader mb-4">Rate Limiting</h6>
+        <div className="d-flex flex-column gap-4">
+          <NumberInput
+            id="maxRequests"
+            label="Max Requests/sec"
+            value={config.max_requests_per_second}
+            onChange={(value) => handleInputChange('max_requests_per_second', value)}
+            min={1}
+            max={100}
+          />
+          <NumberInput
+            id="windowSize"
+            label="Window Size (ms)"
+            value={config.window_size_ms}
+            onChange={(value) => handleInputChange('window_size_ms', value)}
+            min={100}
+            max={10000}
+          />
         </div>
       </div>
 
       {/* Retry Configuration */}
-      <div className="card bg-light">
-        <div className="card-body p-3">
-          <h6 className="card-title google-subheader">Retry Configuration</h6>
-          <div className="row g-2">
-            <div className="col-6">
-              <label className="form-label small">Max Retries</label>
-              <input
-                type="number"
-                min="0"
-                max="10"
-                value={config.max_retries}
-                onChange={(e) => handleInputChange('max_retries', parseInt(e.target.value) || 0)}
-                className="form-control form-control-sm"
-              />
-            </div>
-            <div className="col-6">
-              <label className="form-label small">Base Delay (ms)</label>
-              <input
-                type="number"
-                min="100"
-                max="10000"
-                value={config.base_delay_ms}
-                onChange={(e) => handleInputChange('base_delay_ms', parseInt(e.target.value) || 1000)}
-                className="form-control form-control-sm"
-              />
-            </div>
-          </div>
+      <div className="bg-transparent">
+        <h6 className="google-subheader mb-4">Retry Configuration</h6>
+        <div className="d-flex flex-column gap-4">
+          <NumberInput
+            id="maxRetries"
+            label="Max Retries"
+            value={config.max_retries}
+            onChange={(value) => handleInputChange('max_retries', value)}
+            min={0}
+            max={10}
+          />
+          <NumberInput
+            id="baseDelay"
+            label="Base Delay (ms)"
+            value={config.base_delay_ms}
+            onChange={(value) => handleInputChange('base_delay_ms', value)}
+            min={100}
+            max={10000}
+          />
         </div>
       </div>
 
       {/* Data Output */}
-      <div className="card bg-light">
-        <div className="card-body p-3">
-          <h6 className="card-title google-subheader">Data Output</h6>
-          <div className="row g-2">
-            <div className="col-6">
-              <label className="form-label small">Max File Size (MB)</label>
-              <input
-                type="number"
-                min="1"
-                max="1000"
-                value={config.max_file_size_mb}
-                onChange={(e) => handleInputChange('max_file_size_mb', parseInt(e.target.value) || 100)}
-                className="form-control form-control-sm"
-              />
-            </div>
-            <div className="col-6">
-              <label className="form-label small">Output Format</label>
-              <select
-                value={config.data_output_extension}
-                onChange={(e) => handleInputChange('data_output_extension', e.target.value as 'csv' | 'json')}
-                className="form-select form-select-sm"
-              >
-                <option value="json">JSON</option>
-                <option value="csv">CSV</option>
-              </select>
-            </div>
+      <div className="bg-transparent">
+        <h6 className="google-subheader mb-4">Data Output</h6>
+        <div className="d-flex flex-column gap-4">
+          <NumberInput
+            id="maxFileSize"
+            label="Max File Size (MB)"
+            value={config.max_file_size_mb}
+            onChange={(value) => handleInputChange('max_file_size_mb', value)}
+            min={1}
+            max={1000}
+          />
+          <div>
+            <label className="form-label google-text mb-2">Output Format</label>
+            <select
+              value={config.data_output_extension}
+              onChange={(e) => handleInputChange('data_output_extension', e.target.value)}
+              className="form-select border-0 border-bottom rounded-0 bg-transparent"
+              style={{ borderBottomWidth: '1px !important' }}
+            >
+              <option value="json">JSON</option>
+              <option value="csv">CSV</option>
+            </select>
           </div>
         </div>
       </div>
 
       {/* Monitoring */}
-      <div className="card bg-light">
-        <div className="card-body p-3">
-          <h6 className="card-title google-subheader">Monitoring</h6>
-          <div className="d-flex flex-column gap-2">
-            <Toggle
-              enabled={config.enable_metrics}
-              onChange={(enabled) => handleInputChange('enable_metrics', enabled)}
-              label="Enable Metrics"
-              description="Enable metrics collection"
-            />
-            
-            <Toggle
-              enabled={config.persist_queue}
-              onChange={(enabled) => handleInputChange('persist_queue', enabled)}
-              label="Persist Queue"
-              description="Save queue state to disk"
-            />
-          </div>
+      <div className="bg-transparent">
+        <h6 className="google-subheader mb-4">Monitoring</h6>
+        <div className="d-flex flex-column gap-4">
+          <Toggle
+            enabled={config.enable_metrics}
+            onChange={(enabled) => handleInputChange('enable_metrics', enabled)}
+            label="Enable Metrics"
+            description="Enable metrics collection"
+          />
+          
+          <Toggle
+            enabled={config.persist_queue}
+            onChange={(enabled) => handleInputChange('persist_queue', enabled)}
+            label="Persist Queue"
+            description="Save queue state to disk"
+          />
         </div>
       </div>
     </div>
   )
 
   return (
-    <div className="h-100">
+    <div className={`settings-sidebar-enhanced ${isOpen ? 'open' : ''}`}>
       {/* Mobile Header */}
       <div className="d-lg-none border-bottom p-3 bg-white">
         <div className="d-flex align-items-center justify-content-between">
