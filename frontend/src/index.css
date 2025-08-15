@@ -615,3 +615,23 @@ select.border-0.border-bottom.rounded-0 {
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
 }
+
+/* Google-inspired headers */
+.google-header {
+  color: var(--google-gray-800);
+  font-weight: 500;
+  font-size: 1.25rem !important;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--google-gray-200);
+  padding-bottom: 0.5rem;
+}
+
+.google-subheader {
+  color: var(--google-gray-700);
+  font-weight: 500;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.875rem;
+}

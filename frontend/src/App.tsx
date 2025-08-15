@@ -8,6 +8,9 @@ export interface WebCrawlerConfig {
   accepted_languages: string[]
   target_words: string[]
   min_word_length: number
+  min_content_length: number
+  keyword_match_all: boolean
+  language_content_percentage: number
   user_agent: string
   max_crawl_depth: number
   max_total_urls: number
@@ -115,6 +118,9 @@ function App() {
         accepted_languages: ["en"],
         target_words: ["technology", "innovation"],
         min_word_length: 3,
+        min_content_length: 100,
+        keyword_match_all: false,
+        language_content_percentage: 70,
         user_agent: "Mozilla/5.0 (compatible; WebCrawler/1.0)",
         max_crawl_depth: 3,
         max_total_urls: 100,
@@ -234,6 +240,9 @@ function App() {
         accepted_languages: ["en"],
         target_words: ["technology", "innovation"],
         min_word_length: 3,
+        min_content_length: 100,
+        keyword_match_all: false,
+        language_content_percentage: 70,
         user_agent: "Mozilla/5.0 (compatible; WebCrawler/1.0)",
         max_crawl_depth: 3,
         max_total_urls: 100,

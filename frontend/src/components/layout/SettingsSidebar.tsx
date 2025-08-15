@@ -105,42 +105,91 @@ function SettingsSidebar({ isOpen, onClose, config, onConfigChange, onApplyPrese
   )
 
   const renderFilteringSection = () => (
-    <div className="d-flex flex-column gap-4">
-      <h3 className="google-header h5">Content Filtering</h3>
+    <div className="d-flex flex-column gap-5">
+      <h3 className="google-header h5">Filters</h3>
       
-      <div className="row g-4">
-        <div className="col-12">
-          <MaterialInput
-            id="filterTargetWords"
-            label="Target Words (comma-separated)"
-            value={config.target_words.join(', ')}
-            onChange={(value) => handleInputChange('target_words', value.split(',').map(w => w.trim()).filter(w => w))}
-            type="text"
-          />
-        </div>
+      {/* 1. Content Filtering */}
+      <div className="bg-transparent">
+        <h6 className="google-subheader mb-4">Content Filtering</h6>
+        <div className="d-flex flex-column gap-4">
+          <div className="material-group">
+            <input
+              id="minWordLength"
+              type="number"
+              className="material-input"
+              value={config.min_word_length}
+              onChange={(e) => handleInputChange('min_word_length', parseInt(e.target.value) || 1)}
+              min="1"
+              max="50"
+              placeholder=" "
+            />
+            <label htmlFor="minWordLength" className="material-label">Minimum Word Length</label>
+            <span className="material-bar"></span>
+          </div>
 
-        <div className="col-12">
-          <NumberInput
-            id="minWordLength"
-            label="Minimum Word Length"
-            value={config.min_word_length}
-            onChange={(value) => handleInputChange('min_word_length', value)}
-            min={1}
-            max={50}
-          />
-        </div>
+          <div className="material-group">
+            <input
+              id="excludedWords"
+              type="text"
+              className="material-input"
+              value={config.latin_word_filter.excluded_words.join(', ')}
+              onChange={(e) => handleInputChange('latin_word_filter.excluded_words', e.target.value.split(',').map(w => w.trim()).filter(w => w))}
+              placeholder=" "
+            />
+            <label htmlFor="excludedWords" className="material-label">Excluded Words (comma-separated)</label>
+            <span className="material-bar"></span>
+          </div>
 
-        <div className="col-12">
-          <MaterialInput
-            id="excludedWords"
-            label="Excluded Words (comma-separated)"
-            value={config.latin_word_filter.excluded_words.join(', ')}
-            onChange={(value) => handleInputChange('latin_word_filter.excluded_words', value.split(',').map(w => w.trim()).filter(w => w))}
-            type="text"
-          />
+          <div className="material-group">
+            <input
+              id="minContentLength"
+              type="number"
+              className="material-input"
+              value={config.min_content_length || 100}
+              onChange={(e) => handleInputChange('min_content_length', parseInt(e.target.value) || 100)}
+              min="1"
+              max="10000"
+              placeholder=" "
+            />
+            <label htmlFor="minContentLength" className="material-label">Minimum Content Length (characters)</label>
+            <span className="material-bar"></span>
+          </div>
         </div>
+      </div>
 
-        <div className="col-12">
+      {/* 2. Keyword Filtering */}
+      <div className="bg-transparent">
+        <h6 className="google-subheader mb-4">Keyword Filtering</h6>
+        <div className="d-flex flex-column gap-4">
+          <div className="material-group">
+            <input
+              id="targetWords"
+              type="text"
+              className="material-input"
+              value={config.target_words.join(', ')}
+              onChange={(e) => handleInputChange('target_words', e.target.value.split(',').map(w => w.trim()).filter(w => w))}
+              placeholder=" "
+            />
+            <label htmlFor="targetWords" className="material-label">Target Keywords (comma-separated)</label>
+            <span className="material-bar"></span>
+          </div>
+
+          <div className="d-flex align-items-center gap-3">
+            <span className="small text-muted">Match Strategy:</span>
+            <Toggle
+              enabled={config.keyword_match_all || false}
+              onChange={(enabled) => handleInputChange('keyword_match_all', enabled)}
+              label={config.keyword_match_all ? "Contain ALL keywords" : "Contain ANY keywords"}
+              description=""
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Language Filtering */}
+      <div className="bg-transparent">
+        <h6 className="google-subheader mb-4">Language Filtering</h6>
+        <div className="d-flex flex-column gap-4">
           <div className="material-group">
             <select
               value={config.accepted_languages.length > 0 ? config.accepted_languages[0] : ''}
@@ -168,7 +217,23 @@ function SettingsSidebar({ isOpen, onClose, config, onConfigChange, onApplyPrese
               <option value="ar">🇸🇦 Arabic</option>
               <option value="hi">🇮🇳 Hindi</option>
             </select>
-            <label className="material-label">Accepted Language</label>
+            <label className="material-label">Target Language</label>
+            <span className="material-bar"></span>
+          </div>
+
+          <div className="material-group">
+            <input
+              id="languagePercentage"
+              type="number"
+              className="material-input"
+              value={config.language_content_percentage || 70}
+              onChange={(e) => handleInputChange('language_content_percentage', parseInt(e.target.value) || 70)}
+              min="1"
+              max="100"
+              step="5"
+              placeholder=" "
+            />
+            <label htmlFor="languagePercentage" className="material-label">Minimum Language Content (%)</label>
             <span className="material-bar"></span>
           </div>
         </div>
