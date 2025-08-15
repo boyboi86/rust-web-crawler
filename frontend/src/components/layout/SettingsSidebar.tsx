@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { WebCrawlerConfig } from '../App'
-import Toggle from './Toggle'
-import LanguageDropdown from './LanguageDropdown'
+import { WebCrawlerConfig } from '../../App'
+import { Toggle } from '../ui'
+import { LanguageDropdown } from '../forms'
 
 interface SettingsSidebarProps {
   isOpen: boolean

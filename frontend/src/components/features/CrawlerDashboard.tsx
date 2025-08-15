@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { WebCrawlerConfig, CrawlResult, CrawlStatus } from '../App'
-import Toggle from './Toggle'
+import { WebCrawlerConfig, CrawlResult, CrawlStatus } from '../../App'
+import { Toggle, MaterialInput } from '../ui'
 
 interface CrawlerDashboardProps {
   config: WebCrawlerConfig
@@ -31,15 +31,6 @@ function CrawlerDashboard({
     if (startUrl.trim()) {
       onStartCrawl(startUrl.trim(), config)
     }
-  }
-
-  const sanitizeUrl = (url: string): string => {
-    return url.trim().replace(/[<>'"]/g, '')
-  }
-
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitized = sanitizeUrl(e.target.value)
-    setStartUrl(sanitized)
   }
 
   const handleConfigFieldChange = (field: string, value: any) => {
@@ -83,21 +74,14 @@ function CrawlerDashboard({
         <form onSubmit={handleSubmit}>
           <div className="row g-3">
             <div className="col-12 col-lg-8">
-              <div className="form-group-material">
-                <input
-                  type="url"
-                  id="startUrl"
-                  value={startUrl}
-                  onChange={handleUrlChange}
-                  placeholder=" "
-                  required
-                  className="form-control-material"
-                />
-                <span className="material-bar"></span>
-                <label htmlFor="startUrl" className="form-label">
-                  Starting URL
-                </label>
-              </div>
+              <MaterialInput
+                id="startUrl"
+                label="Starting URL"
+                value={startUrl}
+                onChange={setStartUrl}
+                type="url"
+                required
+              />
             </div>
             <div className="col-12 col-lg-4 d-flex align-items-end">
               <button
@@ -133,19 +117,14 @@ function CrawlerDashboard({
 
             {showAdvanced && (
               <div className="mt-4">
-                <div className="form-group-material mb-4">
-                  <input
-                    type="text"
-                    value={config.target_words.join(', ')}
-                    onChange={(e) => handleConfigFieldChange('target_words', e.target.value)}
-                    placeholder=" "
-                    className="form-control-material"
+                <div className="mb-4">
+                  <MaterialInput
                     id="targetKeywords"
+                    label="Target Keywords (comma-separated)"
+                    value={config.target_words.join(', ')}
+                    onChange={(value) => handleConfigFieldChange('target_words', value)}
+                    type="text"
                   />
-                  <span className="material-bar"></span>
-                  <label htmlFor="targetKeywords" className="form-label">
-                    Target Keywords (comma-separated)
-                  </label>
                 </div>
 
                 {/* Behavior Toggles */}

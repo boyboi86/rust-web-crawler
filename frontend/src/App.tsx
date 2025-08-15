@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import SettingsSidebar from './components/SettingsSidebar'
-import CrawlerDashboard from './components/CrawlerDashboard'
+import { SettingsSidebar } from './components/layout'
+import { CrawlerDashboard } from './components/features'
 
 // Types based on the Rust code
 export interface WebCrawlerConfig {
