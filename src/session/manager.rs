@@ -12,7 +12,6 @@ use crate::logging::CrawlEventLogger;
 use crate::queue::TaskQueue;
 use crate::storage::{DataStorage, StoredCrawlResult};
 
-use super::result_collector::ResultCollector;
 use super::statistics::SessionStatistics;
 
 /// High-level configuration for a crawl session
@@ -70,7 +69,6 @@ pub struct CrawlSession {
     crawler: Arc<WebCrawler>,
     task_queue: Arc<TaskQueue>,
     event_logger: CrawlEventLogger,
-    result_collector: Arc<Mutex<ResultCollector>>,
     statistics: Arc<Mutex<SessionStatistics>>,
     storage: Option<DataStorage>,
 }
@@ -96,9 +94,6 @@ impl CrawlSession {
         // Create event logger
         let event_logger = CrawlEventLogger::new(session_id.clone());
 
-        // Create result collector
-        let result_collector = Arc::new(Mutex::new(ResultCollector::new()));
-
         // Create statistics tracker
         let statistics = Arc::new(Mutex::new(SessionStatistics::new()));
 
@@ -119,7 +114,6 @@ impl CrawlSession {
             crawler,
             task_queue,
             event_logger,
-            result_collector,
             statistics,
             storage,
         })

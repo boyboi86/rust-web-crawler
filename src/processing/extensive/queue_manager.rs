@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
 use super::config::ExtensiveConfig;
-use super::link_processor::{LinkProcessor, ProcessedLink};
+use super::link_processor::ProcessedLink;
 use crate::core::error::CrawlError;
 use crate::core::types::CrawlTask;
 
@@ -57,7 +57,6 @@ impl Default for DiscoveryStats {
 /// Extensive queue manager
 pub struct ExtensiveQueueManager {
     config: ExtensiveConfig,
-    link_processor: LinkProcessor,
     queue: VecDeque<CrawlTask>,
     processed_urls: HashMap<String, Instant>,
     stats: DiscoveryStats,
@@ -67,11 +66,8 @@ pub struct ExtensiveQueueManager {
 impl ExtensiveQueueManager {
     /// Create a new extensive queue manager
     pub fn new(config: ExtensiveConfig) -> Result<Self, CrawlError> {
-        let link_processor = LinkProcessor::new(config.clone())?;
-
         Ok(Self {
             config,
-            link_processor,
             queue: VecDeque::new(),
             processed_urls: HashMap::new(),
             stats: DiscoveryStats::default(),
