@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   clearScreen: false,
+  base: './', // Set base path for Tauri
   server: {
     port: 1420,
     strictPort: true,
