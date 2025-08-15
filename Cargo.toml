@@ -2,6 +2,16 @@
 name = "rust_web_crawler"
 version = "0.1.0"
 edition = "2024"
+authors = ["Wei Xiang <boyboi86@gmail.com>"]
+description = "High-performance web crawler with desktop interface - dual licensed for non-commercial and commercial use"
+license = "CC-BY-NC-ND-4.0"
+license-file = "LICENSE-NONCOMMERCIAL"
+repository = "https://github.com/boyboi86/rust-web-crawler"
+homepage = "https://github.com/boyboi86/rust-web-crawler"
+documentation = "https://docs.rs/rust_web_crawler"
+readme = "README.md"
+keywords = ["web-crawler", "scraping", "tokio", "tauri", "desktop"]
+categories = ["web-programming", "network-programming", "data-structures"]
 
 [lib]
 name = "rust_web_crawler"

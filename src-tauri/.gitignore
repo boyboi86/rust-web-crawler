@@ -2,3 +2,25 @@
 # will have compiled files and executables
 /target/
 /gen/schemas
+
+# Runtime directories
+/crawl_results/
+/logs/
+/temp/
+
+# Backup files (created during refactoring)
+*_backup.rs
+*_old.rs
+*_clean.rs
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+*.log
