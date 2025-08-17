@@ -1,0 +1,135 @@
+# Proxy region configuration for geographic matching
+# Update this file to add new domains without changing code
+
+[proxy_regions]
+north_america = [
+    "yahoo.com",
+    "google.com",
+    "amazon.com",
+    "facebook.com",
+    "twitter.com",
+    "microsoft.com",
+    "apple.com",
+    "netflix.com",
+    "reddit.com",
+    "github.com",
+    "cnn.com",
+    "nytimes.com",
+    "wsj.com",
+    "bloomberg.com",
+    "forbes.com",
+]
+
+europe = [
+    "bbc.co.uk",
+    "reuters.com",
+    "dw.com",
+    "sueddeutsche.de",
+    "theguardian.com",
+    "lemonde.fr",
+    "spiegel.de",
+    "ft.com",
+    "economist.com",
+    "euronews.com",
+    "independent.co.uk",
+    "telegraph.co.uk",
+    "thelocal.com",
+    "politico.eu",
+    "elpais.com",
+]
+
+asia_pacific = [
+    "sg.yahoo.com",
+    "news.naver.com",
+    "asahi.com",
+    "nikkei.com",
+    "smh.com.au",
+    "scmp.com",
+    "japantimes.co.jp",
+    "channelnewsasia.com",
+    "abc.net.au",
+    "nzherald.co.nz",
+    "straitstimes.com",
+    "koreatimes.co.kr",
+    "bangkokpost.com",
+    "thestar.com.my",
+    "inquirer.net",
+]
+
+china = [
+    "baidu.com",
+    "sina.com.cn",
+    "qq.com",
+    "163.com",
+    "sohu.com",
+    "xinhuanet.com",
+    "people.com.cn",
+    "chinadaily.com.cn",
+    "globaltimes.cn",
+    "scio.gov.cn",
+]
+
+# Proxy source endpoints and configurations
+[proxy_sources]
+
+[proxy_sources.free_proxy_list]
+name = "FreeProxyList"
+endpoint = "https://www.proxy-list.download/api/v1/get?type=http"
+is_paid = false
+max_requests_per_day = 1000
+success_rate = 0.5
+
+[proxy_sources.bright_data]
+name = "BrightData"
+endpoint = "https://brightdata.com/api/v1"
+is_paid = true
+max_requests_per_day = 0                   # unlimited
+success_rate = 0.9
+
+[proxy_sources.smart_proxy]
+name = "SmartProxy"
+endpoints = [
+    { country = "us", url = "http://us.smartproxy.com:10000" },
+    { country = "uk", url = "http://uk.smartproxy.com:10000" },
+    { country = "de", url = "http://de.smartproxy.com:10000" },
+    { country = "sg", url = "http://sg.smartproxy.com:10000" },
+    { country = "jp", url = "http://jp.smartproxy.com:10000" },
+]
+is_paid = true
+max_requests_per_day = 0 # unlimited
+success_rate = 0.95
+
+[proxy_sources.rotating_apis]
+endpoints = [
+    "https://api.proxyscrape.com/v2/",
+    "https://proxylist.geonode.com/api/",
+]
+is_paid = false
+max_requests_per_day = 5000
+success_rate = 0.6
+
+# Health check configuration
+[health_check]
+test_urls = [
+    "http://httpbin.org/ip",
+    "https://api.ipify.org",
+    "http://icanhazip.com",
+]
+timeout_seconds = 10
+concurrent_checks = 50
+check_interval_seconds = 300
+min_success_rate = 0.7
+max_response_time_seconds = 15
+
+china = [
+    "baidu.com",
+    "sina.com.cn",
+    "qq.com",
+    "163.com",
+    "sohu.com",
+    "xinhuanet.com",
+    "people.com.cn",
+    "chinadaily.com.cn",
+    "globaltimes.cn",
+    "scio.gov.cn",
+]

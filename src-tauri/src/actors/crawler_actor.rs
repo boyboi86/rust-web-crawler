@@ -191,7 +191,7 @@ impl CrawlerActor {
             }
         };
 
-        // Create crawler config
+        // Create crawler config with enhanced fields from request
         let config = WebCrawlerConfig {
             base_url: vec![request.base_url.clone()],
             max_crawl_depth: request.max_crawl_depth as usize,
@@ -200,12 +200,44 @@ impl CrawlerActor {
             enable_extension_crawling: request.enable_discovery_crawling,
             enable_keyword_filtering: request.enable_keyword_filtering,
             avoid_url_extensions: request.avoid_url_extensions,
-            user_agent: "Tauri WebCrawler".to_string(),
+            // CRITICAL FIX: Use user agent from request instead of hardcoding
+            user_agent: request
+                .user_agent
+                .unwrap_or_else(|| "Tauri WebCrawler".to_string()),
+            proxy_pool: request.proxy_pool.unwrap_or_default(),
+            min_word_length: request
+                .min_word_length
+                .unwrap_or(crate::config::constants::DEFAULT_MIN_WORD_LENGTH)
+                as usize,
             ..WebCrawlerConfig::default()
         };
 
+        println!("🔧 ENHANCED WebCrawlerConfig created:");
+        println!("  ✅ user_agent: {}", config.user_agent);
+        println!("  ✅ proxy_pool: {:?}", config.proxy_pool);
+        println!("  ✅ min_word_length: {}", config.min_word_length);
+        println!("  ✅ base_url: {:?}", config.base_url);
+        println!("  ✅ max_total_urls: {}", config.max_total_urls);
+        println!("  ✅ max_crawl_depth: {}", config.max_crawl_depth);
+
         // Create and run crawler (this can use non-Send types safely in this thread)
-        match WebCrawler::new(config, 5, 3) {
+        // Use configuration values instead of hardcoded ones
+        let max_workers = request
+            .default_rate_limit
+            .as_ref()
+            .map(|rl| {
+                rl.max_requests_per_second
+                    .min(crate::config::constants::MAX_CONCURRENT_REQUESTS_CAP as u32)
+                    as usize
+            })
+            .unwrap_or(crate::config::constants::DEFAULT_MAX_CONCURRENT_REQUESTS);
+        let max_attempts = request
+            .retry_config
+            .as_ref()
+            .map(|rc| rc.max_retries as usize)
+            .unwrap_or(crate::config::constants::DEFAULT_MAX_RETRIES as usize);
+
+        match WebCrawler::new(config, max_workers, max_attempts) {
             Ok(crawler) => {
                 match crawler.init_crawling(url).await {
                     Ok(content_opt) => {
@@ -220,7 +252,7 @@ impl CrawlerActor {
                                 word_count: content.len(),
                                 target_words_found: vec![], // TODO: Implement target word detection
                                 language: Some("unknown".to_string()),
-                                status_code: Some(200),
+                                status_code: Some(crate::config::constants::HTTP_SUCCESS_STATUS),
                             }]
                         } else {
                             vec![]

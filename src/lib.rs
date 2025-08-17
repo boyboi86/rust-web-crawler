@@ -1,11 +1,25 @@
-/// Modern feature-based organization for Rust web crawler
-///
-/// This architecture organizes modules by features and functionality rather than
-/// technical implementation details, following the 4 design principles:
-/// 1. Modules by features/logic with sub-modules for sub-features
-/// 2. Building blocks assembled into unified modules
-/// 3. One level down organization (feature/sub-feature)
-/// 4. Logical cohesion over technical separation
+//! Modern feature-based organization for Rust web crawler
+//!
+//! This architecture organizes modules by features and functionality rather than
+//! technical implementation details, following the 4 design principles:
+//! 1. Modules by features/logic with sub-modules for sub-features
+//! 2. Building blocks assembled into unified modules
+//! 3. One level down organization (feature/sub-feature)
+//! 4. Logical cohesion over technical separation
+
+// Enforce strict safety: no unwrap/expect in production code
+#![deny(clippy::unwrap_used)]
+#![deny(clippy::expect_used)]
+// Additional safety and quality lints
+#![warn(clippy::all)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+#![warn(clippy::cargo)]
+// Allow unwrap/expect in tests only
+#![cfg_attr(test, allow(clippy::unwrap_used))]
+#![cfg_attr(test, allow(clippy::expect_used))]
+
+pub mod common; // Shared building blocks and utilities
 pub mod config; // Configuration management
 pub mod core; // Core types and utilities
 pub mod crawler; // Main crawling engine
@@ -18,10 +32,11 @@ pub mod storage; // Data persistence
 
 // Re-exports for convenience
 // Core types and utilities
+pub use common::CrawlResult;
 pub use core::{
-    ContentProcessor, CrawlError, CrawlResult, CrawlTask, DnsResolver, DomainRateLimit,
-    ErrorHandler, ErrorSeverity, ErrorUtils, HttpClientManager, LangType, QueueStats, RateLimiter,
-    RetryConfig, RobotsChecker, SkipReason, TaskPriority, TaskResult, TaskStatus,
+    ContentProcessor, CrawlError, CrawlTask, DnsResolver, DomainRateLimit, ErrorHandler,
+    ErrorSeverity, ErrorUtils, HttpClientManager, LangType, QueueStats, RateLimiter, RetryConfig,
+    RobotsChecker, SkipReason, TaskPriority, TaskResult, TaskStatus,
 };
 
 // Configuration
@@ -101,10 +116,7 @@ pub use logging::{
     CrawlEvent,
     // Advanced event logging
     CrawlEventLogger,
-    // Formatting
-    CrawlLogFormatter,
     ErrorEvent,
-    JsonLogFormatter,
     PerformanceEvent,
     configure_logging_for_environment,
     init_json_logging,

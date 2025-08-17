@@ -90,8 +90,10 @@ impl ClientManager {
     pub async fn get_client(&self) -> Client {
         if self.clients.is_empty() {
             // Fallback to default client if pool is empty
-            return HttpClientFactory::create_default_client("RustCrawler/1.0")
-                .unwrap_or_else(|_| Client::new());
+            return HttpClientFactory::create_default_client(
+                crate::config::defaults::DEFAULT_APP_USER_AGENT,
+            )
+            .unwrap_or_else(|_| Client::new());
         }
 
         let mut index = self.current_index.lock().await;
@@ -122,10 +124,12 @@ impl ClientManager {
 
 impl Default for ClientManager {
     fn default() -> Self {
-        Self::new(vec![], "RustCrawler/1.0").unwrap_or_else(|_| Self {
-            clients: vec![Client::new()],
-            proxy_clients: Arc::new(Mutex::new(HashMap::new())),
-            current_index: Arc::new(Mutex::new(0)),
+        Self::new(vec![], crate::config::defaults::DEFAULT_APP_USER_AGENT).unwrap_or_else(|_| {
+            Self {
+                clients: vec![Client::new()],
+                proxy_clients: Arc::new(Mutex::new(HashMap::new())),
+                current_index: Arc::new(Mutex::new(0)),
+            }
         })
     }
 }

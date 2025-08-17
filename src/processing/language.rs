@@ -38,7 +38,19 @@ pub fn detect_language(content: &str) -> Option<String> {
 /// Detect language and return LangType
 pub fn detect_language_type(content: &str) -> Option<LangType> {
     if let Some(info) = detect(content) {
-        LangType::from_detected_lang(info.lang())
+        // Convert whatlang::Lang to LangType
+        match info.lang() {
+            whatlang::Lang::Eng => Some(LangType::English),
+            whatlang::Lang::Cmn => Some(LangType::ChineseSimplified),
+            whatlang::Lang::Fra => Some(LangType::French),
+            whatlang::Lang::Deu => Some(LangType::German),
+            whatlang::Lang::Jpn => Some(LangType::Japanese),
+            whatlang::Lang::Kor => Some(LangType::Korean),
+            whatlang::Lang::Spa => Some(LangType::Spanish),
+            whatlang::Lang::Por => Some(LangType::Portuguese),
+            whatlang::Lang::Rus => Some(LangType::Russian),
+            _ => None, // For unsupported languages
+        }
     } else {
         None
     }

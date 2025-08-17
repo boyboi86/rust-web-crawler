@@ -11,13 +11,21 @@ pub async fn get_default_config() -> Result<WebCrawlerConfig, String> {
     Ok(WebCrawlerConfig::default())
 }
 
-/// Validate crawler configuration
+/// Validate crawler request (legacy command)
 #[tauri::command]
-pub async fn validate_config(request: CrawlRequest) -> Result<String, String> {
+pub async fn validate_crawl_request_api(request: CrawlRequest) -> Result<String, String> {
     println!(
-        "🔍 validate_config called for session: {}",
+        "🔍 validate_crawl_request_api called for session: {}",
         request.session_id
     );
+    println!("📊 Received CrawlRequest details:");
+    println!("  - base_url: {}", request.base_url);
+    println!("  - user_agent: {:?}", request.user_agent);
+    println!("  - proxy_pool: {:?}", request.proxy_pool);
+    println!("  - retry_config: {:?}", request.retry_config);
+    println!("  - accepted_languages: {:?}", request.accepted_languages);
+    println!("  - min_word_length: {:?}", request.min_word_length);
+    println!("📋 Full request: {:#?}", request);
 
     match validate_crawl_request(&request) {
         Ok(()) => {
@@ -39,6 +47,15 @@ pub async fn start_crawl(
 ) -> Result<String, String> {
     println!("🚀 start_crawl called for session: {}", request.session_id);
     println!("🔗 Base URL received: {}", request.base_url);
+    println!("📊 Complete request data received:");
+    println!("  - user_agent: {:?}", request.user_agent);
+    println!("  - proxy_pool: {:?}", request.proxy_pool);
+    println!("  - accepted_languages: {:?}", request.accepted_languages);
+    println!("  - min_word_length: {:?}", request.min_word_length);
+    println!("  - default_rate_limit: {:?}", request.default_rate_limit);
+    println!("  - retry_config: {:?}", request.retry_config);
+    println!("  - logging_config: {:?}", request.logging_config);
+    println!("📋 Full request structure: {:#?}", request);
 
     // Validate request first
     if let Err(e) = validate_crawl_request(&request) {

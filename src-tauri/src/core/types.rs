@@ -15,6 +15,36 @@ pub struct CrawlRequest {
     pub enable_language_filtering: bool,
     pub latin_word_filter: bool,
     pub match_strategy: String, // "any" or "all"
+    // Enhanced fields to match full WebCrawlerConfig
+    pub user_agent: Option<String>,
+    pub proxy_pool: Option<Vec<String>>,
+    pub accepted_languages: Option<Vec<String>>,
+    pub min_word_length: Option<u32>,
+    pub default_rate_limit: Option<DefaultRateLimit>,
+    pub retry_config: Option<RetryConfig>,
+    pub logging_config: Option<LoggingConfig>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DefaultRateLimit {
+    pub max_requests_per_second: u32,
+    pub window_size_ms: u64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct RetryConfig {
+    pub max_retries: u32,
+    pub base_delay_ms: u64,
+    pub max_delay_ms: u64,
+    pub backoff_multiplier: f64,
+    pub jitter_factor: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct LoggingConfig {
+    pub level: String,
+    pub file_path: String,
+    pub json_format: bool,
 }
 
 /// Status structure for frontend display

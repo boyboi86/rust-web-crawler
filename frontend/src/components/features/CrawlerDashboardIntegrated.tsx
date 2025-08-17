@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react'
 import { Toggle, MaterialInput } from '../ui'
 import { CrawlerAPI, debugTauriEnvironment, testTauriCommand } from '../../api/crawler'
 import { CrawlerFormConfig, CrawlStatus } from '../../types/crawler'
+import { configClient } from '../../api/configuration'
 
 interface CrawlerDashboardProps {
   onConfigChange?: (config: CrawlerFormConfig) => void
 }
 
 function CrawlerDashboard({ onConfigChange }: CrawlerDashboardProps) {
-  // Form state matching the UI
+  // Form state that will be initialized from backend configuration
   const [formConfig, setFormConfig] = useState<CrawlerFormConfig>({
     baseUrl: '',
     maxTotalUrls: 100,
@@ -21,6 +22,27 @@ function CrawlerDashboard({ onConfigChange }: CrawlerDashboardProps) {
     enableLanguageFiltering: false,
     latinWordFilter: false,
     matchStrategy: 'any',
+    // These will be overridden by backend configuration
+    userAgent: "",
+    proxyPool: [],
+    acceptedLanguages: [],
+    minWordLength: 3, // Will be overridden by backend config
+    defaultRateLimit: {
+      maxRequestsPerSecond: 2,
+      windowSizeMs: 1000,
+    },
+    retryConfig: {
+      maxRetries: 3,
+      baseDelayMs: 1000,
+      maxDelayMs: 30000,
+      backoffMultiplier: 2,
+      jitterFactor: 0.1,
+    },
+    loggingConfig: {
+      level: 'info',
+      filePath: 'logs/crawler.log',
+      jsonFormat: false,
+    },
   })
 
   // Crawl session state
@@ -41,6 +63,34 @@ function CrawlerDashboard({ onConfigChange }: CrawlerDashboardProps) {
       __TAURI__: (window as any).__TAURI__,
       __TAURI_INVOKE__: (window as any).__TAURI_INVOKE__,
     } : 'undefined');
+  }, []);
+
+  // Load configuration from backend
+  useEffect(() => {
+    const loadConfiguration = async () => {
+      try {
+        console.log('🔧 Loading configuration from backend...');
+        await configClient.loadConfiguration();
+        const backendDefaults = configClient.getDefaultFormValues();
+        
+        console.log('✅ Configuration loaded, updating form defaults:', backendDefaults);
+        
+        setFormConfig(prev => ({
+          ...prev,
+          userAgent: backendDefaults.userAgent,
+          maxTotalUrls: backendDefaults.maxUrls,
+          maxCrawlDepth: backendDefaults.maxDepth,
+          minWordLength: backendDefaults.minWordLength, // This will now be 3 instead of 10
+          acceptedLanguages: backendDefaults.acceptedLanguages,
+          proxyPool: backendDefaults.proxyPool,
+        }));
+      } catch (error) {
+        console.error('❌ Failed to load configuration:', error);
+        // Keep the default values if configuration loading fails
+      }
+    };
+
+    loadConfiguration();
   }, []);
 
   // Poll for status updates
@@ -73,6 +123,16 @@ function CrawlerDashboard({ onConfigChange }: CrawlerDashboardProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     console.log('🚀 Form submission started with config:', formConfig)
+    console.log('📊 Form config field details:')
+    console.log('  - baseUrl:', formConfig.baseUrl)
+    console.log('  - userAgent:', formConfig.userAgent)
+    console.log('  - proxyPool:', formConfig.proxyPool)
+    console.log('  - acceptedLanguages:', formConfig.acceptedLanguages)
+    console.log('  - minWordLength:', formConfig.minWordLength)
+    console.log('  - defaultRateLimit:', formConfig.defaultRateLimit)
+    console.log('  - retryConfig:', formConfig.retryConfig)
+    console.log('  - loggingConfig:', formConfig.loggingConfig)
+    console.log('🏁 Form submission completed, isLoading set to false')
     setValidationError(null)
     setIsLoading(true)
 

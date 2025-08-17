@@ -22,14 +22,17 @@ name = "main"
 path = "src/bin/main.rs"
 
 [dependencies]
+bytes = "1.0"
 tokio = { version = "1.0", features = ["full"] }
-reqwest = { version = "0.11", features = ["json", "socks"] }
+tokio-util = "0.7"
+reqwest = { version = "0.11", features = ["json", "socks", "gzip", "deflate"] }
 scraper = "0.13"
 lol_html = "1.2"
 bloom = "0.3"
 whatlang = "0.16"
 fake-useragent = "0.1"
 anyhow = "1.0"
+thiserror = "1.0"
 url = "2.4"
 rand = "0.8"
 unicode-segmentation = "1.10"
@@ -42,6 +45,8 @@ toml = "0.8"
 csv = "1.3"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]
 tempfile = "3.8"

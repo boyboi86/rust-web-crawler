@@ -11,10 +11,9 @@ use anyhow::Error;
 pub use events::{
     CrawlEvent, CrawlEventLogger, ErrorEvent, ErrorType, PerformanceEvent, PerformanceEventType,
 };
-pub use formatter::{CrawlLogFormatter, JsonLogFormatter};
+// Note: formatter module contains only documentation, using standard tracing formatters
 
 /// Logging initialization utilities
-
 /// Initialize structured logging for the application
 pub fn init_logging() -> Result<(), Error> {
     use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};

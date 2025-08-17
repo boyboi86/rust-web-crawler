@@ -62,7 +62,7 @@ struct PrioritizedTask {
 
 impl PartialEq for PrioritizedTask {
     fn eq(&self, other: &Self) -> bool {
-        self.task.priority == other.task.priority
+        self.task.priority() == other.task.priority()
     }
 }
 
@@ -78,9 +78,15 @@ impl Ord for PrioritizedTask {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         // Higher priority first, then by creation time (FIFO for same priority)
         self.task
-            .priority
-            .cmp(&other.task.priority)
-            .then_with(|| other.task.created_at().cmp(&self.task.created_at()))
+            .priority()
+            .cmp(&other.task.priority())
+            .then_with(|| {
+                other
+                    .task
+                    .execution_timing()
+                    .created_at()
+                    .cmp(&self.task.execution_timing().created_at())
+            })
     }
 }
 

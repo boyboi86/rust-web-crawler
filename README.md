@@ -18,6 +18,17 @@
 **Use Cases**: `Web Scraping` `Content Analysis` `Data Mining` `Research Tools` `Desktop Apps`  
 **Licensing**: `Dual Licensed` `Non-Commercial Free` `Commercial Paid` `Creator Protected`
 
+## 🤖 **AI Agent Development**
+
+This project includes comprehensive guidelines for AI-assisted development:
+
+- **📋 [AI Development Guidelines](AI_DEVELOPMENT_GUIDELINES.md)** - Rules, permissions, and best practices
+- **⚙️ [AI Agent Configuration](AI_AGENT_CONFIG.md)** - Technical schema and validation requirements
+- **🔧 VS Code Integration** - Workspace settings with AI guidance rules
+- **✅ Automated Workflows** - Built-in tasks for quality assurance
+
+AI agents working on this project should review these documents first to understand allowed actions, required permissions, and coding standards.
+
 ### 🚀 **What You Get**
 
 - **High-performance web crawler** with configurable concurrency (1-100 threads)

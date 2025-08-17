@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { SettingsSidebar } from './components/layout'
 import { CrawlerDashboard } from './components/features'
+import { initializeConfiguration, configClient } from './api/configuration'
 
 // Types based on the Rust code
 export interface WebCrawlerConfig {
@@ -109,12 +110,66 @@ function App() {
 
   const loadDefaultConfig = async () => {
     try {
-      const defaultConfig: WebCrawlerConfig = await invoke('get_default_config')
-      setConfig(defaultConfig)
+      console.log('🔧 Loading configuration from backend...')
+      
+      // Use the new configuration system to get config from backend
+      await initializeConfiguration()
+      const backendConfig = configClient.getConfig()
+      
+      // Map backend config to frontend config format
+      const mappedConfig: WebCrawlerConfig = {
+        accepted_languages: backendConfig.app_config.content.accepted_languages,
+        target_words: backendConfig.app_config.crawling.target_words,
+        min_word_length: backendConfig.app_config.crawling.min_word_length,
+        min_content_length: backendConfig.app_config.content.min_content_length,
+        keyword_match_all: false, // Default for now
+        language_content_percentage: backendConfig.app_config.content.language_content_percentage,
+        user_agent: backendConfig.app_config.network.user_agent,
+        max_crawl_depth: backendConfig.app_config.crawling.max_crawl_depth,
+        max_total_urls: backendConfig.app_config.crawling.max_total_urls,
+        enable_extension_crawling: false, // Default for now
+        enable_keyword_filtering: false, // Default for now
+        avoid_url_extensions: backendConfig.app_config.crawling.avoid_extensions,
+        latin_word_filter: {
+          exclude_numeric: true,
+          excluded_words: backendConfig.app_config.crawling.excluded_words,
+          min_word_length: backendConfig.app_config.crawling.min_word_length,
+        },
+        proxy_pool: backendConfig.app_config.proxy.proxy_pool,
+        max_requests_per_second: backendConfig.app_config.rate_limiting.requests_per_second,
+        window_size_ms: backendConfig.app_config.rate_limiting.window_ms,
+        max_retries: backendConfig.app_config.retry.max_retries,
+        base_delay_ms: backendConfig.app_config.retry.base_delay_ms,
+        max_delay_ms: backendConfig.app_config.retry.max_delay_ms,
+        backoff_multiplier: backendConfig.app_config.retry.backoff_multiplier,
+        jitter_factor: backendConfig.app_config.retry.jitter_factor,
+        max_file_size_mb: 10, // Default for now
+        data_output_extension: 'json' as const,
+        enable_metrics: backendConfig.app_config.development.enable_metrics,
+        metrics_port: backendConfig.app_config.development.metrics_port,
+        health_check_interval_secs: backendConfig.app_config.development.health_check_interval_secs,
+        persist_queue: true, // Default for now
+        checkpoint_interval_secs: 60, // Default for now
+      }
+      
+      console.log('✅ Backend configuration loaded and mapped:', mappedConfig)
+      console.log('📊 Configuration source:', backendConfig.environment_info.config_source)
+      setConfig(mappedConfig)
+      
     } catch (error) {
-      console.error('Failed to load default config:', error)
-      // Fallback to a default configuration for development mode
-      const fallbackConfig: WebCrawlerConfig = {
+      console.error('❌ Failed to load config from backend:', error)
+      
+      // Fallback to legacy method for backward compatibility
+      try {
+        console.log('🔄 Falling back to legacy config loading...')
+        const defaultConfig: WebCrawlerConfig = await invoke('get_default_config')
+        setConfig(defaultConfig)
+        console.log('✅ Legacy configuration loaded successfully')
+      } catch (legacyError) {
+        console.error('❌ Legacy config loading also failed:', legacyError)
+        
+        // Fallback to a default configuration for development mode
+        const fallbackConfig: WebCrawlerConfig = {
         accepted_languages: ["en"],
         target_words: ["technology", "innovation"],
         min_word_length: 3,
@@ -150,6 +205,7 @@ function App() {
         checkpoint_interval_secs: 60
       }
       setConfig(fallbackConfig)
+      }
     }
   }
 

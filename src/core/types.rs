@@ -3,6 +3,31 @@ use std::time::Instant;
 use url::Url;
 use whatlang::Lang;
 
+/// Geographic regions for proxy selection and content localization
+#[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
+pub enum Region {
+    NorthAmerica, // US, Canada
+    Europe,       // EU countries
+    AsiaPacific,  // Japan, Singapore, Australia
+    China,        // Specialized for Chinese sites
+    Global,       // Fallback/international
+}
+
+impl std::str::FromStr for Region {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "north_america" | "northamerica" | "na" | "us" => Ok(Region::NorthAmerica),
+            "europe" | "eu" => Ok(Region::Europe),
+            "asia_pacific" | "asiapacific" | "ap" | "asia" | "apac" => Ok(Region::AsiaPacific),
+            "china" | "cn" => Ok(Region::China),
+            "global" | "international" => Ok(Region::Global),
+            _ => Err(format!("Unknown region: {}", s)),
+        }
+    }
+}
+
 /// Type aliases for optional types - building blocks for common patterns
 pub type OptionInstant = Option<Instant>;
 pub type OptionString = Option<String>;

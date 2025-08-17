@@ -128,7 +128,11 @@ export const formConfigToCrawlRequest = (
   formConfig: CrawlerFormConfig,
   sessionId?: string
 ): CrawlRequest => {
-  return {
+  console.log('🔄 formConfigToCrawlRequest started with input:', formConfig);
+  console.log('📝 Input form config keys:', Object.keys(formConfig));
+  console.log('📝 Input form config values:', Object.values(formConfig));
+
+  const request: CrawlRequest = {
     session_id: sessionId || generateSessionId(),
     base_url: formConfig.baseUrl,
     max_total_urls: formConfig.maxTotalUrls,
@@ -141,7 +145,55 @@ export const formConfigToCrawlRequest = (
     enable_language_filtering: formConfig.enableLanguageFiltering,
     latin_word_filter: formConfig.latinWordFilter,
     match_strategy: formConfig.matchStrategy,
+    // Enhanced fields
+    user_agent: formConfig.userAgent,
+    proxy_pool: formConfig.proxyPool,
+    accepted_languages: formConfig.acceptedLanguages,
+    min_word_length: formConfig.minWordLength,
+    default_rate_limit: formConfig.defaultRateLimit
+      ? {
+          max_requests_per_second: formConfig.defaultRateLimit.maxRequestsPerSecond,
+          window_size_ms: formConfig.defaultRateLimit.windowSizeMs,
+        }
+      : undefined,
+    retry_config: formConfig.retryConfig
+      ? {
+          max_retries: formConfig.retryConfig.maxRetries,
+          base_delay_ms: formConfig.retryConfig.baseDelayMs,
+          max_delay_ms: formConfig.retryConfig.maxDelayMs,
+          backoff_multiplier: formConfig.retryConfig.backoffMultiplier,
+          jitter_factor: formConfig.retryConfig.jitterFactor,
+        }
+      : undefined,
+    logging_config: formConfig.loggingConfig
+      ? {
+          level: formConfig.loggingConfig.level,
+          file_path: formConfig.loggingConfig.filePath,
+          json_format: formConfig.loggingConfig.jsonFormat,
+        }
+      : undefined,
   };
+
+  console.log('✅ formConfigToCrawlRequest generated CrawlRequest:', request);
+  console.log('📝 Output request keys:', Object.keys(request));
+  console.log('📝 Output request values:', Object.values(request));
+
+  // Validate that key data wasn't lost
+  if (formConfig.userAgent && !request.user_agent) {
+    console.error('❌ DATA LOSS: userAgent was not transferred!', {
+      input: formConfig.userAgent,
+      output: request.user_agent,
+    });
+  }
+
+  if (formConfig.proxyPool && !request.proxy_pool) {
+    console.error('❌ DATA LOSS: proxyPool was not transferred!', {
+      input: formConfig.proxyPool,
+      output: request.proxy_pool,
+    });
+  }
+
+  return request;
 };
 
 // Tauri API calls
@@ -159,12 +211,12 @@ export class CrawlerAPI {
   // Validate crawler configuration
   static async validateConfig(request: CrawlRequest): Promise<string> {
     try {
-      console.log('🔍 Calling Tauri invoke: validate_config with request:', request);
-      const result = await safeInvoke<string>('validate_config', { request });
-      console.log('✅ validate_config returned:', result);
+      console.log('🔍 Calling Tauri invoke: validate_crawl_request_api with request:', request);
+      const result = await safeInvoke<string>('validate_crawl_request_api', { request });
+      console.log('✅ validate_crawl_request_api returned:', result);
       return result;
     } catch (error) {
-      console.error('❌ validate_config failed:', error);
+      console.error('❌ validate_crawl_request_api failed:', error);
       throw new Error(`Config validation failed: ${error}`);
     }
   }
@@ -212,9 +264,19 @@ export class CrawlerAPI {
     startResult: string;
   }> {
     console.log('🔄 CrawlerAPI.startAndExecuteCrawl called with formConfig:', formConfig);
+    console.log('📊 Form config details:');
+    console.log('  - baseUrl:', formConfig.baseUrl);
+    console.log('  - userAgent:', formConfig.userAgent);
+    console.log('  - proxyPool:', formConfig.proxyPool);
+    console.log('  - retryConfig:', formConfig.retryConfig);
 
     const request = formConfigToCrawlRequest(formConfig);
     console.log('📋 Generated CrawlRequest:', request);
+    console.log('📊 Request details:');
+    console.log('  - base_url:', request.base_url);
+    console.log('  - user_agent:', request.user_agent);
+    console.log('  - proxy_pool:', request.proxy_pool);
+    console.log('  - retry_config:', request.retry_config);
 
     try {
       // Validate configuration
@@ -224,6 +286,7 @@ export class CrawlerAPI {
 
       // Start the crawl session
       console.log('🚀 Starting crawl session...');
+      console.log('🚀 Calling Tauri invoke: start_crawl with request:', request);
       const startResult = await this.startCrawl(request);
       console.log('✅ Crawl session started:', startResult);
 
@@ -237,6 +300,8 @@ export class CrawlerAPI {
       return result;
     } catch (error) {
       console.error('💥 startAndExecuteCrawl failed:', error);
+      console.error('💥 Failed request was:', request);
+      console.error('💥 Original form config was:', formConfig);
       throw error;
     }
   }

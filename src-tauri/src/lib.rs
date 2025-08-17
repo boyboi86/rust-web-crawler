@@ -13,12 +13,15 @@
 // Module declarations
 pub mod actors;
 pub mod api;
+pub mod commands;
+pub mod config;
 pub mod core;
 pub mod utils;
 
 // Re-exports for convenience
 use crate::actors::CrawlerBridge;
 use crate::api::*;
+use crate::commands::config_commands::*;
 use log::LevelFilter;
 
 /// Application metadata
@@ -36,11 +39,19 @@ pub fn run() {
         .manage(CrawlerBridge::new())
         // Register Tauri commands (API endpoints)
         .invoke_handler(tauri::generate_handler![
+            // Legacy API commands
             get_default_config,
-            validate_config,
+            validate_crawl_request_api,
             start_crawl,
             get_crawl_status,
             stop_crawl,
+            // New configuration API commands
+            get_app_config,
+            get_config_preset,
+            validate_config,
+            get_config_summary,
+            get_env_documentation,
+            reset_config_to_defaults,
         ])
         // Setup application
         .setup(|app| {

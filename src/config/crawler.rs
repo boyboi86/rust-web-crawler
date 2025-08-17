@@ -90,9 +90,9 @@ impl Default for WebCrawlerConfig {
                 "content".to_string(),
                 "information".to_string(),
             ],
-            min_word_length: 50,
+            min_word_length: 10,  // Lowered from 50 to 10 for better success rate
             proxy_pool: vec![],
-            user_agent: "Mozilla/5.0 (compatible; RustCrawler/1.0)".to_string(),
+            user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36".to_string(),
             accepted_languages: vec![LangType::Eng],
             default_rate_limit: Some(DomainRateLimit::default()),
             domain_rate_limits: None,
@@ -189,19 +189,22 @@ pub mod defaults {
     // HTTP headers
     pub const ACCEPT_HEADER: &str =
         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-    pub const ACCEPT_ENCODING_HEADER: &str = "gzip, deflate, br";
+    pub const ACCEPT_ENCODING_HEADER: &str = "gzip, deflate";
     pub const CONNECTION_HEADER: &str = "keep-alive";
     pub const UPGRADE_INSECURE_REQUESTS: &str = "1";
 
-    // User agents for rotation
+    // User agents for rotation - Updated August 2025
     // memory efficient, stored in binary
     // no runtime allocation needed
     pub const USER_AGENTS: &[&str] = &[
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15",
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:129.0) Gecko/20100101 Firefox/129.0",
     ];
 
     // Language negotiation
@@ -227,4 +230,21 @@ pub mod defaults {
 
     // Crawling defaults
     pub const DEFAULT_MAX_DEPTH: usize = 3;
+
+    // Application defaults
+    pub const DEFAULT_APP_USER_AGENT: &str = "RustCrawler/1.0";
+    pub const DEFAULT_WEBCRAWLER_USER_AGENT: &str = "WebCrawler/1.0";
+
+    // HTTP client defaults
+    pub const DEFAULT_HTTP_TIMEOUT_SECS: u64 = 30;
+    pub const DEFAULT_TCP_KEEPALIVE_SECS: u64 = 30;
+
+    // Rate limiting thresholds
+    pub const RATE_LIMIT_LOG_THRESHOLD_MS: u64 = 100;
+
+    // Timeout defaults
+    pub const DEFAULT_QUEUE_PROCESSING_TIMEOUT_SECS: u64 = 300; // 5 minutes
+
+    // Task queue defaults
+    pub const DEFAULT_TASK_QUEUE_RETRIES: usize = 3;
 }

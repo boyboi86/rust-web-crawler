@@ -119,8 +119,11 @@ impl WebCrawler {
         let start_time = Instant::now();
 
         // Log crawl start
-        self.event_logger
-            .log_crawl_start(&url, None, Some("WebCrawler/1.0"));
+        self.event_logger.log_crawl_start(
+            &url,
+            None,
+            Some(crate::config::defaults::DEFAULT_WEBCRAWLER_USER_AGENT),
+        );
 
         // 1. Check if URL already visited using Bloom filter
         let url_str = url.as_str();
@@ -157,7 +160,9 @@ impl WebCrawler {
         self.rate_limiter.check_and_wait(&domain).await?;
         let rate_limit_duration = rate_limit_start.elapsed();
 
-        if rate_limit_duration.as_millis() > 100 {
+        if rate_limit_duration.as_millis()
+            > crate::config::defaults::RATE_LIMIT_LOG_THRESHOLD_MS as u128
+        {
             self.event_logger.log_rate_limited(
                 &url,
                 rate_limit_duration.as_millis() as u64,
@@ -488,7 +493,10 @@ impl WebCrawler {
         )?);
 
         // Create task queue
-        let queue = Arc::new(TaskQueue::new(max_concurrent_tasks, 3));
+        let queue = Arc::new(TaskQueue::new(
+            max_concurrent_tasks,
+            crate::config::defaults::DEFAULT_TASK_QUEUE_RETRIES
+        ));
 
         // Enqueue seed URLs with high priority
         let task_urls: Vec<(Url, TaskPriority)> = seeds
@@ -531,7 +539,7 @@ impl WebCrawler {
             if let Err(e) = run_queue_processor(
                 queue_clone,
                 processor_fn,
-                Duration::from_secs(30), // cleanup interval
+                Duration::from_secs(crate::config::defaults::CLEANUP_INTERVAL_SECS), // cleanup interval
             )
             .await
             {
@@ -545,7 +553,9 @@ impl WebCrawler {
         });
 
         // Wait for processing to complete or timeout
-        let timeout_duration = queue_processing_timeout.unwrap_or_else(|| Duration::from_secs(300)); // 5 minutes default
+        let timeout_duration = queue_processing_timeout.unwrap_or_else(||
+            Duration::from_secs(crate::config::defaults::DEFAULT_QUEUE_PROCESSING_TIMEOUT_SECS)
+        ); // 5 minutes default
 
         let start_time = Instant::now();
         loop {

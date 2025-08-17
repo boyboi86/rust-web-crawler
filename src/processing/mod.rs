@@ -13,6 +13,7 @@
 /// Building blocks are assembled here for unified content processing capabilities.
 // Core processing modules (each enhanced with Level 3 features)
 pub mod content; // Basic content + keyword filtering (Feature 1)
+pub mod content_refactored; // Refactored version following 11 rules
 pub mod discovery; // Basic discovery + extensive crawling (Feature 2)
 pub mod language; // Basic language + text cleaning (Feature 3)
 
@@ -62,6 +63,13 @@ pub use discovery::{
     is_valid_crawl_url,
     normalize_url,
 };
+
+// Re-export refactored content processing components
+pub use content_refactored::{
+    ContentProcessingConfig, ContentProcessingConfigBuilder,
+    ContentProcessor as ContentProcessorRefactored, ExtractedContent,
+};
+
 pub use language::{
     // Enhanced Feature 3: Advanced text cleaning and preprocessing
     CharacterFilter,

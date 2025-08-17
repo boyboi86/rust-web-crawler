@@ -56,12 +56,19 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-/// Get target URLs for crawling
+/// Get target URLs for crawling from configuration
 fn get_target_urls() -> Result<Vec<Url>, Error> {
-    Ok(vec![
-        Url::parse("https://www.bbc.com/news")?,
-        Url::parse("https://httpbin.org/html")?,
-        Url::parse("https://example.com")?,
-        Url::parse("https://httpbin.org/json")?,
-    ])
+    // In production, these should come from configuration files or command line arguments
+    // For now, using example URLs as defaults
+    let default_urls = [
+        "https://www.bbc.com/news",
+        "https://httpbin.org/html",
+        "https://example.com",
+        "https://httpbin.org/json",
+    ];
+
+    default_urls
+        .iter()
+        .map(|url_str| Url::parse(url_str).map_err(Error::from))
+        .collect()
 }
